@@ -1,0 +1,12 @@
+diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -225,7 +225,7 @@ char	domainname[MAXDOMNAMELEN];
+ int		domainnamelen;
+ #if defined(__i386__) || defined(__x86_64__)
+ struct exec_archhandler exec_archhandler_ppc = {
+-	.path = "/usr/libexec/oah/RosettaNonGrata",
++	.path = "/usr/libexec/oah/translate",
+ };
+ #else /* __i386__ */
+ struct exec_archhandler exec_archhandler_ppc;
