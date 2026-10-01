@@ -69,3 +69,28 @@ The attempted live GDB comparison did not reach Rosetta execution on either Lion
 The supplied Snow Leopard `translate` Mach-O also marks its `__TEXT` segment with `SG_PROTECTED_VERSION_1`. XNU maps such a segment through the Apple protected pager. Therefore static bytes in the protected part of the file are not a reliable representation of the runtime instructions, and debugger-mediated execution is not a valid comparison path for this binary.
 
 Future diagnosis of the Lion direct-launch crash should use non-ptrace evidence first: the native crash report, a postmortem core dump if the kernel permits one, and syscall/VM tracing (for example DTrace/dtruss) compared against the successful Snow Leopard direct launch.
+
+
+## Postmortem direct-translate crash analysis
+
+A non-debugged Lion direct invocation produced a core dump that can be examined postmortem without perturbing the protected translator. The fault is a read from `0xc918a01c` at runtime-decrypted instruction `0xb81605d9`:
+
+```asm
+mov    (%edi),%edx
+mov    %edx,%ecx
+shl    $0x18,%ecx
+...
+mov    %ecx,(%edi)
+```
+
+The sequence is an in-place 32-bit byte swap. At the fault, `EDI=0xc918a01c`, `EAX=0xb018a000`, and `CR2=0xc918a01c`. The `+0x1c` offset is exactly the size of a 32-bit Mach-O header, making it likely (not yet proven) that this code is byte-swapping Mach-O load-command data at a presumed image mapping whose page base is `0xc918a000`. The crash report shows no mapping at that address.
+
+The page-aligned bases `0xb018a000` and `0xc918a000` differ by `0x19000000`. The meaning of that relationship remains under investigation; it should not yet be encoded as a kernel fix.
+
+The next diagnostic is to use the existing Lion core to dump the runtime-decrypted translator text around the caller and inspect the referenced structures/mappings. These private runtime dumps are analysis artifacts only and must not be committed to this repository.
+
+## DTrace/dtruss limitation
+
+The attempted `dtruss` controls are not behavior-preserving. The Snow Leopard trace reports that DTrace's inserted dyld library could not be loaded and emits repeated invalid-user-access errors; the expected PPC smoke-test stdout is absent. Lion likewise produces no subject stdout under `dtruss`. Therefore those syscall streams are not used as authoritative translator-behavior comparisons.
+
+A separate non-DTrace `DYLD_PRINT_LIBRARIES=1` control on Snow Leopard is valid: it reaches the PPC subject, loads the OAH Interposers shim plus PPC libSystem/libmathCommon, and the smoke test runs. The equivalent Lion direct launch crashes before reaching that guest-library output stage.
