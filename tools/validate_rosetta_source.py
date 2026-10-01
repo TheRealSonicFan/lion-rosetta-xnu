@@ -43,7 +43,8 @@ def main():
         "cpu": "osfmk/i386/cpu_capabilities.h",
         "comm": "osfmk/i386/commpage/commpage.c",
         "sigs": "osfmk/i386/commpage/commpage_sigs.c",
-        "conf": "osfmk/conf/files.i386",
+        "conf_i386": "osfmk/conf/files.i386",
+        "conf_x86_64": "osfmk/conf/files.x86_64",
     }
     errors = []
     data = {}
@@ -58,7 +59,8 @@ def main():
             print("FAIL:", e)
         return 2
 
-    bsd, cpu, comm, sigs, conf = data["bsd"], data["cpu"], data["comm"], data["sigs"], data["conf"]
+    bsd, cpu, comm, sigs = data["bsd"], data["cpu"], data["comm"], data["sigs"]
+    conf_i386, conf_x86_64 = data["conf_i386"], data["conf_x86_64"]
     require(errors, '.path = "/usr/libexec/oah/translate",' in bsd, "PowerPC handler is not translate")
     require(errors, "_COMM_PAGE32_AREA_LENGTH\t( 19 * 4096 )" in cpu, "32-bit area length is not 19 pages")
     require(errors, "_COMM_PAGE32_BASE_ADDRESS\t( 0xfffec000 )" in cpu, "32-bit base is not 0xfffec000")
@@ -78,7 +80,8 @@ def main():
     require(errors, "commpage_stuff_routine(&sigdata_descriptor);" in comm, "signature population missing")
     require(errors, "TRUE,\t\t/* restore Rosetta translated commpage ABI */" in comm, "32-bit compatibility enable missing")
     require(errors, "FALSE,\t\t/* no Rosetta compatibility data in the 64-bit commpage */" in comm, "64-bit compatibility guard missing")
-    require(errors, conf.count("osfmk/i386/commpage/commpage_sigs.c\tstandard") == 1, "commpage_sigs.c build entry count != 1")
+    require(errors, conf_i386.count("osfmk/i386/commpage/commpage_sigs.c\tstandard") == 1, "commpage_sigs.c i386 build entry count != 1")
+    require(errors, conf_x86_64.count("osfmk/i386/commpage/commpage_sigs.c\tstandard") == 1, "commpage_sigs.c x86_64 build entry count != 1")
 
     blob = git_blob_sha1(read_bytes(os.path.join(root, rel["sigs"])))
     require(errors, blob == EXPECTED_SIGS_GIT_BLOB, "commpage_sigs.c differs from xnu-1504.15.3 blob %s" % blob)
@@ -112,6 +115,7 @@ def main():
     print("PASS: commpage_sigs.c exactly matches xnu-1504.15.3")
     print("PASS: Lion native CPU-family population remains present")
     print("PASS: Rosetta data is enabled only for the 32-bit commpage")
+    print("PASS: commpage_sigs.c is built into both I386 and X86_64 kernels")
     return 0
 
 if __name__ == "__main__":
