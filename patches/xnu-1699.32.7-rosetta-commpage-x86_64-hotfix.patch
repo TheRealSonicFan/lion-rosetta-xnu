@@ -1,0 +1,11 @@
+diff --git a/osfmk/conf/files.x86_64 b/osfmk/conf/files.x86_64
+--- a/osfmk/conf/files.x86_64
++++ b/osfmk/conf/files.x86_64
+@@ -78,6 +78,7 @@
+ 
+ osfmk/i386/commpage/commpage.c	standard
+ osfmk/i386/commpage/commpage_asm.s	standard
++osfmk/i386/commpage/commpage_sigs.c	standard
+ osfmk/i386/commpage/pthreads.s	standard
+ osfmk/i386/commpage/fifo_queues.s	standard
+ 
