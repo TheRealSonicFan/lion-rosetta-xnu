@@ -45,3 +45,16 @@ The current patch passes `base_offset` into `commpage_allocate()` and confines t
 After the translated commpage probe passed, a PPC smoke-test exec no longer crashed but `translate` printed its own usage and exited 1. The process name in that usage was the original PPC target, but no subject program was supplied. Source comparison identified a Lion exec refactor: Lion's `exec_powerpc32_imgact()` calls `exec_reset_save_path()` and replaces the saved executable path with the interpreter path, whereas Snow Leopard keeps the PPC subject path saved and looks up the Rosetta interpreter through a separate buffer.
 
 The current patch removes the PowerPC-only saved-path reset and makes the `-3` interpreter relookup use `ip_interp_buffer` when `IMGPF_POWERPC` is set, while retaining Lion's `ip_strings` behavior for ordinary `#!` interpreters. This restores the Snow Leopard separation between Rosetta's subject exec path and its interpreter lookup path.
+
+
+## Direct `translate` invocation is not a valid Rosetta control
+
+A manual launch such as:
+
+```
+/usr/libexec/oah/translate /path/to/ppc-program
+```
+
+does not reproduce the kernel's PowerPC image-activation path. In both Snow Leopard and Lion XNU, a normal i386 exec of `translate` lacks `IMGPF_POWERPC`. Consequently the kernel does not call `vm_map_exec(..., CPU_TYPE_POWERPC)` for that exec and does not set `P_TRANSLATED`; the PowerPC redirect path does both. A direct `translate` crash therefore does not by itself invalidate a normal Rosetta launch.
+
+The October 1 Lion direct-invocation experiment exited by SIGSEGV (status 139). That result is treated only as evidence that direct invocation is not a substitute for the translated exec path. The meaningful current failure remains the normal PPC launch: `translate` starts under the PowerPC handler, prints its usage, exits 1, and creates no new crash report. That symptom and the Snow Leopard/Lion source difference motivate the subject-exec-path hotfix.
