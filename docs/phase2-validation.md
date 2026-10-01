@@ -60,3 +60,12 @@ is a valid positive control on Snow Leopard 10.6.8: with the known-good `ppc-smo
 The same direct invocation on the current Lion phase-2 system exits by SIGSEGV (status 139). Therefore Lion still differs from Snow Leopard in at least one translator-visible runtime/kernel behavior even after the translated commpage has been restored. This direct-launch crash must be analyzed before another kernel rebuild.
 
 The normal Lion PPC launch remains a separate symptom: the kernel redirects to `translate`, which prints its usage and exits 1 without a new crash report. The subject-exec-path source difference remains a plausible explanation for that normal-launch symptom, but the exec-path hotfix is provisional until the direct-launch crash is understood.
+
+
+## GDB/vmmap capture caveat for protected translate
+
+The attempted live GDB comparison did not reach Rosetta execution on either Lion or Snow Leopard. Under GDB, `translate` exited with code `055` on both systems before a breakpoint, crash, register state, or backtrace could be captured. The subsequent `ps` command matched the GDB command line (which contains the translate pathname), so both `vmmap` captures were maps of `gdb-i386-apple-darwin`, not of `translate`.
+
+The supplied Snow Leopard `translate` Mach-O also marks its `__TEXT` segment with `SG_PROTECTED_VERSION_1`. XNU maps such a segment through the Apple protected pager. Therefore static bytes in the protected part of the file are not a reliable representation of the runtime instructions, and debugger-mediated execution is not a valid comparison path for this binary.
+
+Future diagnosis of the Lion direct-launch crash should use non-ptrace evidence first: the native crash report, a postmortem core dump if the kernel permits one, and syscall/VM tracing (for example DTrace/dtruss) compared against the successful Snow Leopard direct launch.
