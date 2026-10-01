@@ -104,7 +104,7 @@ A functional Lion Rosetta kernel also needs restoration of Snow Leopard's transl
 1. the extended 32-bit commpage mapping needed by Rosetta;
 2. the translated/byte-swapped PPC view at `+0x8000`;
 3. the PPC branch-assist data and signature data from the Snow Leopard commpage implementation; and
-4. the Snow Leopard `commpage_sigs.c` build input or an equivalent generated representation.
+4. the Snow Leopard `commpage_sigs.c` build input or an equivalent generated representation in both the I386 and X86_64 build lists.
 
 The implementation must not simply replace Lion's native commpage with Snow Leopard's version: Lion's native commpage format is newer. The intended approach is to retain Lion's native values and add back the translated-only compatibility region.
 
