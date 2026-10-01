@@ -16,7 +16,7 @@ Snow Leopard's native 32-bit commpage starts at `0xffff0000`, the CPU-capability
 
 `patches/xnu-1699.32.7-rosetta-commpage.patch` is standalone and applies to an unmodified `xnu-1699.32.7` tree. Do not apply phase 1 first; phase 2 already contains the handler change.
 
-It modifies `bsd/kern/bsd_init.c`, `osfmk/i386/cpu_capabilities.h`, `osfmk/i386/commpage/commpage.c`, and `osfmk/conf/files.i386`, and adds `osfmk/i386/commpage/commpage_sigs.c`.
+It modifies `bsd/kern/bsd_init.c`, `osfmk/i386/cpu_capabilities.h`, `osfmk/i386/commpage/commpage.c`, `osfmk/conf/files.i386`, and `osfmk/conf/files.x86_64`, and adds `osfmk/i386/commpage/commpage_sigs.c`.
 
 The added file is byte-for-byte identical to Apple XNU `xnu-1504.15.3` Git blob `0c100a2761ea07ab99c26b8a63bf3da4164b5cb5`.
 
@@ -49,3 +49,7 @@ After applying the patch:
 ```
 
 This checks patch structure and ABI invariants. It does not substitute for compiling or boot-testing the kernel.
+
+## Architecture build lists
+
+Both `osfmk/conf/files.i386` and `osfmk/conf/files.x86_64` must include `osfmk/i386/commpage/commpage_sigs.c`. Both kernel architectures compile `commpage.c` and therefore both need definitions for `ba_descriptors` and `sigdata_descriptor`, even though the compatibility data is populated only into the shared 32-bit commpage.
