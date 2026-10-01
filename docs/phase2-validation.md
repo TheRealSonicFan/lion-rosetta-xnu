@@ -24,8 +24,12 @@ Validated before publication:
 - 32-bit population enables Rosetta compatibility and 64-bit population disables it;
 - every generated unified-diff section was reapplied in memory to the exact upstream base and matched the intended patched content byte-for-byte.
 
-Compilation and boot/runtime validation are deliberately not claimed here; they require the historical Apple build environment and Lion test machine.
+Compilation has now been validated on Lion 10.7.5 with Xcode 4.2.1: both RELEASE_I386 and RELEASE_X86_64 kernels compile, link, and complete the `DSYMUTIL`, `STRIP`, `CTFMERGE`, and `CTFINSERT` stages. Both produced kernels contain `/usr/libexec/oah/translate`. Boot/runtime validation of the phase-2 kernel is not yet claimed.
 
 ## Build feedback correction
 
 The first I386 compilation completed and linked with `commpage_sigs.o`. The first X86_64 compilation exposed a packaging omission in the earlier phase-2 patch: `files.x86_64` did not include `commpage_sigs.c`, so the final link could not resolve `ba_descriptors` and `sigdata_descriptor`. The current phase-2 patch and validator cover both architecture build lists. A minimal hotfix patch is provided for trees already patched with the earlier revision.
+
+## Successful dual-architecture build
+
+After correcting the X86_64 build-list omission, the X86_64 build explicitly compiled both `commpage_sigs.o` and `commpage.o`, then completed `LD mach_kernel.sys`, `DSYMUTIL mach_kernel.sys`, `STRIP mach_kernel`, `CTFMERGE mach_kernel`, and `CTFINSERT mach_kernel`. The I386 build had already completed the same final pipeline successfully. This validates the phase-2 patch through source application, source validation, compilation, and link for both Lion kernel architectures. Boot and Rosetta execution remain the next validation stages.
