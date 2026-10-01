@@ -73,7 +73,7 @@ This repository contains only open-source/kernel-side tooling and documentation.
 
 The source work targets Apple's `xnu-1699.32.7` Lion 10.7.5 release and compares it against Snow Leopard 10.6.8 `xnu-1504.15.3`.
 
-The existing `patches/xnu-1699.32.7-rosetta.patch` remains the **handler-only phase-1 diagnostic patch**. The standalone phase-2 source patch is `patches/xnu-1699.32.7-rosetta-commpage.patch`; it includes the handler change plus the translated 32-bit commpage restoration. It has passed static/source validation but still requires compilation and boot testing.
+The existing `patches/xnu-1699.32.7-rosetta.patch` remains the **handler-only phase-1 diagnostic patch**. The standalone phase-2 source patch is `patches/xnu-1699.32.7-rosetta-commpage.patch`; it includes the handler change plus the translated 32-bit commpage restoration. It has now compiled and linked successfully as both RELEASE_I386 and RELEASE_X86_64 kernels under Lion 10.7.5 with Xcode 4.2.1. Boot/runtime validation of the phase-2 kernel is still pending.
 
 ## Phase-2 source patch workflow
 
