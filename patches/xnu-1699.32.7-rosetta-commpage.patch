@@ -1,3 +1,65 @@
+diff --git a/bsd/kern/kern_exec.c b/bsd/kern/kern_exec.c
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -446,9 +446,13 @@
+ 	if (error)
+ 		return (error);
+ 
++	/*
++	 * Preserve the original executable path in ip_strings for Rosetta.
++	 * Snow Leopard keeps that path across the PowerPC redirect; translate
++	 * consumes it from the exec_path/apple vector to locate the PPC subject.
++	 * Lion normally resets ip_strings for interpreters, which is correct for
++	 * #! scripts but would replace the PPC subject path with translate itself.
++	 */
+-	exec_reset_save_path(imgp);
+-	exec_save_path(imgp, CAST_USER_ADDR_T(imgp->ip_interp_buffer),
+-				   UIO_SYSSPACE);
+ 	
+ 	/*
+ 	 * provide a replacement string for p->p_comm; we have to use an
+@@ -1389,19 +1393,31 @@
+ 			imgp->ip_vp = NULL;	/* already put */
+ 			imgp->ip_ndp = NULL; /* already nameidone */
+ 
+-			/* Use imgp->ip_strings, which exec_shell_imgact reset to the interpreter */
+-			NDINIT(&nd, LOOKUP, OP_LOOKUP, FOLLOW | LOCKLEAF,
+-				   UIO_SYSSPACE, CAST_USER_ADDR_T(imgp->ip_strings), imgp->ip_vfs_context);
+-
+ #ifdef IMGPF_POWERPC
++			if (imgp->ip_flags & IMGPF_POWERPC) {
++				/*
++				 * Rosetta needs ip_strings to remain the PPC subject's
++				 * saved exec path.  Look up translate through the separate
++				 * interpreter buffer, matching Snow Leopard's split between
++				 * saved subject path and interpreter lookup path.
++				 */
++				NDINIT(&nd, LOOKUP, OP_LOOKUP, FOLLOW | LOCKLEAF,
++					   UIO_SYSSPACE, CAST_USER_ADDR_T(imgp->ip_interp_buffer),
++					   imgp->ip_vfs_context);
++				/*
++				 * PowerPC does not follow symlinks because the
++				 * code which sets exec_archhandler_ppc.fsid and
++				 * exec_archhandler_ppc.fileid doesn't follow them.
++				 */
+-			/*
+-			 * PowerPC does not follow symlinks because the
+-			 * code which sets exec_archhandler_ppc.fsid and
+-			 * exec_archhandler_ppc.fileid doesn't follow them.
+-			 */
+-			if (imgp->ip_flags & IMGPF_POWERPC)
+ 				nd.ni_cnd.cn_flags &= ~FOLLOW;
++			} else
+ #endif	/* IMGPF_POWERPC */
++			{
++				/* #! interpreters still use Lion's reset saved path. */
++				NDINIT(&nd, LOOKUP, OP_LOOKUP, FOLLOW | LOCKLEAF,
++					   UIO_SYSSPACE, CAST_USER_ADDR_T(imgp->ip_strings),
++					   imgp->ip_vfs_context);
++			}
+ 
+ 			proc_transend(p, 0);
+ 			goto again;
 diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
