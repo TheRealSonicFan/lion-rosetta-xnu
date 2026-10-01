@@ -109,3 +109,11 @@ A functional Lion Rosetta kernel also needs restoration of Snow Leopard's transl
 The implementation must not simply replace Lion's native commpage with Snow Leopard's version: Lion's native commpage format is newer. The intended approach is to retain Lion's native values and add back the translated-only compatibility region.
 
 A standalone phase-2 source patch implementing this translated-commpage restoration is now provided as `patches/xnu-1699.32.7-rosetta-commpage.patch`. It has passed static/source validation against the exact Apple OSS inputs but still requires compilation and Lion boot testing. The handler-only binary kernel patch remains diagnostic rather than a complete Rosetta restoration.
+
+## PowerPC exec-path regression in Lion
+
+Lion's exec refactor changed PowerPC redirection in `exec_powerpc32_imgact()`. Snow Leopard copies the architecture-handler path to a dedicated interpreter-name buffer but leaves the saved executable path unchanged. Lion copies the handler to `ip_interp_buffer`, then calls `exec_reset_save_path()` and saves the interpreter as the new exec path. Lion's generic interpreter relookup subsequently uses `ip_strings`.
+
+That behavior is suitable for `#!` scripts but removes the PPC subject exec path Rosetta expects. With the commpage restored, this manifests as `translate` starting successfully, printing its command-line usage, and exiting 1 without a crash or PPC execution.
+
+The phase-2 patch now preserves `ip_strings` across the PowerPC redirect and performs the PowerPC interpreter lookup through `ip_interp_buffer`; ordinary shell interpreters retain Lion's original `ip_strings` lookup path.
