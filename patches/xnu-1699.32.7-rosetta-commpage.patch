@@ -1,0 +1,385 @@
+diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -225,7 +225,7 @@
+ int		domainnamelen;
+ #if defined(__i386__) || defined(__x86_64__)
+ struct exec_archhandler exec_archhandler_ppc = {
++	.path = "/usr/libexec/oah/translate",
+-	.path = "/usr/libexec/oah/RosettaNonGrata",
+ };
+ #else /* __i386__ */
+ struct exec_archhandler exec_archhandler_ppc;
+diff --git a/osfmk/i386/cpu_capabilities.h b/osfmk/i386/cpu_capabilities.h
+--- a/osfmk/i386/cpu_capabilities.h
++++ b/osfmk/i386/cpu_capabilities.h
+@@ -96,11 +96,16 @@
+  * Because Mach VM cannot map the last page of an address space, we don't use it.
+  */
+  
++#define	_COMM_PAGE32_AREA_LENGTH	( 19 * 4096 )				/* reserved length of entire comm area */
++#define _COMM_PAGE32_BASE_ADDRESS	( 0xfffec000 )				/* base address of allocated memory, -20 pages */
++#define _COMM_PAGE32_START_ADDRESS	( 0xffff0000 )				/* native commpage start, -16 pages */
++#define _COMM_PAGE32_AREA_USED		( 19 * 4096 )				/* native + Rosetta compatibility region */
++#define _COMM_PAGE32_SIGS_OFFSET	0x8000					    /* offset to Rosetta byte-swapped data */
++
++/* Snow Leopard Rosetta 1 translated-commarea ABI.  Keep Lion native ABI at version 12. */
++#define _COMM_PAGE_ROSETTA_VERSION	11
++#define _COMM_PAGE_ROSETTA_2_TO_52	(_COMM_PAGE32_START_ADDRESS+0x040)
++#define _COMM_PAGE_ROSETTA_10_TO_6	(_COMM_PAGE32_START_ADDRESS+0x048)
+-#define	_COMM_PAGE32_AREA_LENGTH	( 2 * 4096 )				/* reserved length of entire comm area */
+-#define _COMM_PAGE32_BASE_ADDRESS	( 0xffff0000 )				/* base address of allocated memory */
+-#define _COMM_PAGE32_START_ADDRESS	( _COMM_PAGE32_BASE_ADDRESS )	/* address traditional commpage code starts on */
+-#define _COMM_PAGE32_AREA_USED		( 2 * 4096 )				/* this is the amt actually allocated */
+-#define _COMM_PAGE32_SIGS_OFFSET	0x8000					    /* offset to routine signatures */
+ 
+ #define	_COMM_PAGE64_AREA_LENGTH	( 2 * 1024 * 1024 )			/* reserved length of entire comm area (2MB) */
+ #ifdef __ASSEMBLER__
+diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
+--- a/osfmk/i386/commpage/commpage.c
++++ b/osfmk/i386/commpage/commpage.c
+@@ -72,6 +72,10 @@
+ extern	commpage_descriptor*	commpage_32_routines[];
+ extern	commpage_descriptor*	commpage_64_routines[];
+ 
++/* Rosetta translated commpage descriptors restored from xnu-1504.15.3. */
++extern	commpage_descriptor sigdata_descriptor;
++extern	commpage_descriptor *ba_descriptors[];
++
+ extern vm_map_t	commpage32_map;	// the shared submap, set up in vm init
+ extern vm_map_t	commpage64_map;	// the shared submap, set up in vm init
+ 
+@@ -295,6 +299,34 @@
+     next = address + length;
+ }
+ 
++/*
++ * Store a PPC-visible, byte-swapped copy in the Rosetta compatibility
++ * area without changing Lion's native commpage contents.
++ */
++static void
++commpage_stuff_rosetta_swap(
++	commpage_address_t	address,
++	void	*source,
++	int	length )
++{
++	void *dest = commpage_addr_of(address);
++	dest = (void *)((uintptr_t) dest + _COMM_PAGE_SIGS_OFFSET);
++
++	switch (length) {
++		case 2:
++			OSWriteSwapInt16(dest, 0, *(uint16_t *)source);
++			break;
++		case 4:
++			OSWriteSwapInt32(dest, 0, *(uint32_t *)source);
++			break;
++		case 8:
++			OSWriteSwapInt64(dest, 0, *(uint64_t *)source);
++			break;
++		default:
++			panic("unsupported Rosetta commpage swap length %d", length);
++	}
++}
++
+ /* Copy a routine into comm page if it matches running machine.
+  */
+ static void
+@@ -332,6 +364,7 @@
+ 	size_t		area_used,	// _COMM_PAGE32_AREA_USED or _COMM_PAGE64_AREA_USED
+ 	commpage_address_t base_offset,	// will become commPageBaseOffset
+ 	commpage_descriptor** commpage_routines, // list of routine ptrs for this commpage
++	boolean_t	rosetta_compat,	// populate Snow Leopard PPC-facing compatibility data
+ 	commpage_time_data** time_data,	// &time_data32 or &time_data64
+ 	const char*	signature )	// "commpage 32-bit" or "commpage 64-bit"
+ {
+@@ -342,6 +375,10 @@
+ 	uint32_t	cfamily;
+ 	commpage_descriptor **rd;
+ 	short   version = _COMM_PAGE_THIS_VERSION;
++	short	rosetta_version = _COMM_PAGE_ROSETTA_VERSION;
++	int	rosetta_caps;
++	static double rosetta_two52 = 1048576.0 * 1048576.0 * 4096.0; /* 2**52 */
++	static double rosetta_ten6 = 1000000.0;                       /* 10**6 */
+ 
+ 	next = 0;
+ 	cur_routine = 0;
+@@ -358,6 +395,34 @@
+ 	commpage_stuff(_COMM_PAGE_VERSION,&version,sizeof(short));
+ 	commpage_stuff(_COMM_PAGE_CPU_CAPABILITIES,&_cpu_capabilities,sizeof(int));
+ 
++	if (rosetta_compat) {
++		/*
++		 * Rosetta 1 reads a Snow Leopard-format PPC view at +0x8000.
++		 * Do not mirror Lion version 12 or Lion's CPU-family field there:
++		 * the translated ABI remains Snow Leopard commpage version 11.
++		 */
++		commpage_stuff_rosetta_swap(_COMM_PAGE_VERSION,
++					   &rosetta_version, sizeof(rosetta_version));
++
++		/* PPC capability bits used by Snow Leopard Rosetta. */
++		rosetta_caps = 0x44; /* kCache32 | kDcbaAvailable */
++		if (_cpu_capabilities & kUP)
++			rosetta_caps |= (kUP + (1 << kNumCPUsShift));
++		else
++			rosetta_caps |= 2 << kNumCPUsShift; /* Rosetta exposes at most two CPUs */
++		if (!noVMX)
++			rosetta_caps |= 0x101; /* kHasAltivec | kDataStreamsAvailable */
++		commpage_stuff_rosetta_swap(_COMM_PAGE_CPU_CAPABILITIES,
++					   &rosetta_caps, sizeof(rosetta_caps));
++
++		c2 = 32;
++		commpage_stuff_rosetta_swap(_COMM_PAGE_CACHE_LINESIZE, &c2, sizeof(c2));
++		commpage_stuff_rosetta_swap(_COMM_PAGE_ROSETTA_2_TO_52,
++					   &rosetta_two52, sizeof(rosetta_two52));
++		commpage_stuff_rosetta_swap(_COMM_PAGE_ROSETTA_10_TO_6,
++					   &rosetta_ten6, sizeof(rosetta_ten6));
++	}
++
+ 	c2 = 32;  // default
+ 	if (_cpu_capabilities & kCache64)
+ 		c2 = 64;
+@@ -389,6 +454,23 @@
+ 	if (next > _COMM_PAGE_END)
+ 		panic("commpage overflow: next = 0x%08x, commPagePtr = 0x%p", next, commPagePtr);
+ 
++	if (rosetta_compat) {
++		/* PPC branch-assist stubs and translated routine-signature data. */
++		next = 0;
++		cur_routine = 0;
++		matched = FALSE;
++		for (rd = ba_descriptors; *rd != NULL; rd++)
++			commpage_stuff_routine(*rd);
++		if (!matched)
++			panic("commpage no Rosetta branch-assist match");
++
++		next = 0;
++		cur_routine = 0;
++		matched = FALSE;
++		commpage_stuff_routine(&sigdata_descriptor);
++		if (!matched)
++			panic("commpage no Rosetta signature-data match");
++	}
+ }
+ 
+ 
+@@ -409,6 +491,7 @@
+ 				_COMM_PAGE32_AREA_USED,
+ 				_COMM_PAGE32_BASE_ADDRESS,
+ 				commpage_32_routines, 
++				TRUE,		/* restore Rosetta translated commpage ABI */
+ 				&time_data32,
+ 				"commpage 32-bit");
+ #ifndef __LP64__
+@@ -423,6 +506,7 @@
+ 					_COMM_PAGE64_AREA_USED,
+ 					_COMM_PAGE32_START_ADDRESS, /* commpage address are relative to 32-bit commpage placement */
+ 					commpage_64_routines, 
++					FALSE,		/* no Rosetta compatibility data in the 64-bit commpage */
+ 					&time_data64,
+ 					"commpage 64-bit");
+ #ifndef __LP64__
+diff --git a/osfmk/conf/files.i386 b/osfmk/conf/files.i386
+--- a/osfmk/conf/files.i386
++++ b/osfmk/conf/files.i386
+@@ -82,6 +82,7 @@
+ 
+ osfmk/i386/commpage/commpage.c	standard
+ osfmk/i386/commpage/commpage_asm.s	standard
++osfmk/i386/commpage/commpage_sigs.c	standard
+ osfmk/i386/commpage/pthreads.s	standard
+ osfmk/i386/commpage/fifo_queues.s	standard
+ 
+diff --git a/osfmk/i386/commpage/commpage_sigs.c b/osfmk/i386/commpage/commpage_sigs.c
+new file mode 100644
+--- /dev/null
++++ b/osfmk/i386/commpage/commpage_sigs.c
+@@ -0,0 +1,189 @@
++#include "commpage.h"
++
++static unsigned int sigdata[] =
++{
++	0x06004018, 0x01000000, 0x6d6f635f, 0x65726170, 0x646e615f, 0x6177735f, 
++	0x00323370, 0x06004018, 0x2828e07c, 0x4018077c, 0x14008240, 0x2d29807c, 
++	0xf0ffa240, 0x01006038, 0x2000804e, 0x00006038, 0x2000804e, 0x06004018, 
++	0x00000000, 0x6d6f635f, 0x65726170, 0x646e615f, 0x6177735f, 0x00323370, 
++	0x06004018, 0x06004018, 0x01000000, 0x6d6f635f, 0x65726170, 0x646e615f, 
++	0x6177735f, 0x62323370, 0x00000000, 0x06004018, 0xac06007c, 0x2828e07c, 
++	0x4018077c, 0x18008240, 0x2d29807c, 0xf0ffa240, 0x2c01004c, 0x01006038, 
++	0x2000804e, 0x00006038, 0x2000804e, 0x2000804e, 0x06004018, 0x00000000, 
++	0x6d6f635f, 0x65726170, 0x646e615f, 0x6177735f, 0x62323370, 0x00000000, 
++	0x06004018, 0x06004018, 0x01000000, 0x6d6f635f, 0x65726170, 0x646e615f, 
++	0x6177735f, 0x62343670, 0x00000000, 0x06004018, 0xac04207c, 0xa828e07c, 
++	0x4018277c, 0x1800c240, 0xad29807c, 0xf0ffc240, 0x2c01004c, 0x01006038, 
++	0x2000804e, 0xf8ff0039, 0x00006038, 0xad09887c, 0x2000804e, 0x2000804e, 
++	0x06004018, 0x00000000, 0x6d6f635f, 0x65726170, 0x646e615f, 0x6177735f, 
++	0x62343670, 0x00000000, 0x06004018, 0x06004018, 0x01000000, 0x6d656d5f, 
++	0x5f746573, 0x74746170, 0x006e7265, 0x06004018, 0xc0008428, 0xa642407c, 
++	0x00804064, 0x10000571, 0xa643007c, 0x1000a038, 0xce48007c, 0x2000c038, 
++	0x7c008441, 0x30002039, 0x10008241, 0xce41007c, 0x10000839, 0xf0ff8438, 
++	0xbed18054, 0xec45007c, 0xbe068454, 0xffff0030, 0x40004039, 0x60006039, 
++	0xa603097c, 0xec45067c, 0x10000048, 0x00000060, 0x00000060, 0x00000060, 
++	0xec450a7c, 0xec450b7c, 0xce41007c, 0xce41057c, 0xce41067c, 0xce41097c, 
++	0x40000839, 0xe4ff0042, 0xce41007c, 0xce41057c, 0xce41067c, 0xce41097c, 
++	0x40000839, 0x7fd98054, 0xfe068454, 0x18008241, 0xa603097c, 0xce41007c, 
++	0xce41057c, 0x20000839, 0xf4ff0042, 0xa643407c, 0x2000804e, 0x2000804e, 
++	0x06004018, 0x00000000, 0x6d656d5f, 0x5f746573, 0x74746170, 0x006e7265, 
++	0x06004018, 0x06004018, 0x01000000, 0x6f74615f, 0x5f63696d, 0x75716e65, 
++	0x00657565, 0x06004018, 0x2818c07c, 0x2e29c47c, 0x00000060, 0x2d19807c, 
++	0x2000e24d, 0xecffff4b, 0x2000804e, 0x06004018, 0x00000000, 0x6f74615f, 
++	0x5f63696d, 0x75716e65, 0x00657565, 0x06004018, 0x06004018, 0x01000000, 
++	0x6f74615f, 0x5f63696d, 0x75716564, 0x00657565, 0x06004018, 0x781b657c, 
++	0x2828607c, 0x0000032c, 0x2000824d, 0x2e20c37c, 0x2d29c07c, 0xecffc240, 
++	0x00000060, 0x2000804e, 0x06004018, 0x00000000, 0x6f74615f, 0x5f63696d, 
++	0x75716564, 0x00657565, 0x06004018, 0x06004018, 0x01000000, 0x6f74615f, 
++	0x5f63696d, 0x72726162, 0x00726569, 0x06004018, 0x2000804e, 0x06004018, 
++	0x00000000, 0x6f74615f, 0x5f63696d, 0x72726162, 0x00726569, 0x06004018, 
++	0x06004018, 0x01000000, 0x6f74615f, 0x5f63696d, 0x5f646461, 0x00003233, 
++	0x06004018, 0x2820a07c, 0x142ac37c, 0x2d21c07c, 0xf4ffc240, 0x7833c37c, 
++	0x2000804e, 0x06004018, 0x00000000, 0x6f74615f, 0x5f63696d, 0x5f646461, 
++	0x00003233, 0x06004018, 0x06004018, 0x01000000, 0x63616d5f, 0x62615f68, 
++	0x756c6f73, 0x745f6574, 0x00656d69, 0x06004018, 0x00004018, 0x04006000, 
++	0x00000000, 0x00000000, 0x63616d5f, 0x62615f68, 0x756c6f73, 0x745f6574, 
++	0x5f656d69, 0x68676968, 0x00000000, 0x00004018, 0x00004018, 0x04008000, 
++	0x00000000, 0x00000000, 0x63616d5f, 0x62615f68, 0x756c6f73, 0x745f6574, 
++	0x5f656d69, 0x00776f6c, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 
++	0x63616d5f, 0x62615f68, 0x756c6f73, 0x745f6574, 0x00656d69, 0x06004018, 
++	0x06004018, 0x01000000, 0x6970735f, 0x6f6c5f6e, 0x745f6b63, 0x00007972, 
++	0x06004018, 0x05004018, 0x04006000, 0x05004018, 0x00004018, 0x04006000, 
++	0x00000000, 0x00000000, 0x6970735f, 0x6f6c5f6e, 0x745f6b63, 0x775f7972, 
++	0x70706172, 0x00007265, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 
++	0x6970735f, 0x6f6c5f6e, 0x745f6b63, 0x00007972, 0x06004018, 0x06004018, 
++	0x01000000, 0x6970735f, 0x6f6c5f6e, 0x00006b63, 0x06004018, 0x05004018, 
++	0x04006000, 0x05004018, 0x00004018, 0x00000000, 0x00000000, 0x00000000, 
++	0x6970735f, 0x6f6c5f6e, 0x775f6b63, 0x70706172, 0x00007265, 0x00004018, 
++	0x2000804e, 0x06004018, 0x00000000, 0x6970735f, 0x6f6c5f6e, 0x00006b63, 
++	0x06004018, 0x06004018, 0x01000000, 0x6970735f, 0x6e755f6e, 0x6b636f6c, 
++	0x00000000, 0x06004018, 0x05004018, 0x04006000, 0x05004018, 0x00004018, 
++	0x00000000, 0x00000000, 0x00000000, 0x6970735f, 0x6e755f6e, 0x6b636f6c, 
++	0x00000000, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 0x6970735f, 
++	0x6e755f6e, 0x6b636f6c, 0x00000000, 0x06004018, 0x06004018, 0x01000000, 
++	0x6874705f, 0x64616572, 0x7465675f, 0x63657073, 0x63696669, 0x00000000, 
++	0x06004018, 0x02004018, 0xc082ffff, 0x02004018, 0x2000804e, 0x06004018, 
++	0x00000000, 0x6874705f, 0x64616572, 0x7465675f, 0x63657073, 0x63696669, 
++	0x00000000, 0x06004018, 0x06004018, 0x01000000, 0x7465675f, 0x656d6974, 
++	0x6164666f, 0x00000079, 0x06004018, 0x05004018, 0x04006000, 0x05004018, 
++	0x00004018, 0x04006000, 0x00000000, 0x00000000, 0x7465675f, 0x656d6974, 
++	0x6164666f, 0x72775f79, 0x65707061, 0x00000072, 0x00004018, 0x2000804e, 
++	0x06004018, 0x00000000, 0x7465675f, 0x656d6974, 0x6164666f, 0x00000079, 
++	0x06004018, 0x06004018, 0x01000000, 0x7379735f, 0x6163645f, 0x5f656863, 
++	0x73756c66, 0x00000068, 0x06004018, 0x05004018, 0x04006000, 0x05004018, 
++	0x05004018, 0x04008000, 0x05004018, 0x00004018, 0x00000000, 0x00000000, 
++	0x00000000, 0x7379735f, 0x6163645f, 0x5f656863, 0x73756c66, 0x00000068, 
++	0x00004018, 0x2000804e, 0x06004018, 0x00000000, 0x7379735f, 0x6163645f, 
++	0x5f656863, 0x73756c66, 0x00000068, 0x06004018, 0x06004018, 0x01000000, 
++	0x7379735f, 0x6163695f, 0x5f656863, 0x61766e69, 0x6164696c, 0x00006574, 
++	0x06004018, 0x05004018, 0x04006000, 0x05004018, 0x05004018, 0x04008000, 
++	0x05004018, 0x00004018, 0x00000000, 0x00000000, 0x00000000, 0x7379735f, 
++	0x6163695f, 0x5f656863, 0x61766e69, 0x6164696c, 0x775f6574, 0x70706172, 
++	0x00007265, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 0x7379735f, 
++	0x6163695f, 0x5f656863, 0x61766e69, 0x6164696c, 0x00006574, 0x06004018, 
++	0x06004018, 0x01000000, 0x6874705f, 0x64616572, 0x6c65735f, 0x00000066, 
++	0x06004018, 0x02004018, 0x8085ffff, 0x02004018, 0x2000804e, 0x06004018, 
++	0x00000000, 0x6874705f, 0x64616572, 0x6c65735f, 0x00000066, 0x06004018, 
++	0x06004018, 0x01000000, 0x657a625f, 0x00006f72, 0x06004018, 0x05004018, 
++	0x04006000, 0x05004018, 0x05004018, 0x04008000, 0x05004018, 0x00004018, 
++	0x00000000, 0x00000000, 0x00000000, 0x657a625f, 0x00006f72, 0x00004018, 
++	0x2000804e, 0x06004018, 0x00000000, 0x657a625f, 0x00006f72, 0x06004018, 
++	0x06004018, 0x01000000, 0x6f63625f, 0x00007970, 0x06004018, 0x05004018, 
++	0x04006000, 0x05004018, 0x05004018, 0x04008000, 0x05004018, 0x05004018, 
++	0x0400a000, 0x05004018, 0x00004018, 0x00000000, 0x00000000, 0x00000000, 
++	0x6f63625f, 0x00007970, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 
++	0x6f63625f, 0x00007970, 0x06004018, 0x06004018, 0x01000000, 0x6d656d5f, 
++	0x65766f6d, 0x00000000, 0x06004018, 0x05004018, 0x04006000, 0x05004018, 
++	0x05004018, 0x04008000, 0x05004018, 0x05004018, 0x0400a000, 0x05004018, 
++	0x00004018, 0x00000000, 0x00000000, 0x00000000, 0x6d656d5f, 0x65766f6d, 
++	0x00000000, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 0x6d656d5f, 
++	0x65766f6d, 0x00000000, 0x06004018, 0x06004018, 0x01000000, 0x6e616e5f, 
++	0x6d69746f, 0x00000065, 0x06004018, 0x00004018, 0x04006000, 0x00000000, 
++	0x00000000, 0x6e616e5f, 0x6d69746f, 0x69685f65, 0x00006867, 0x00004018, 
++	0x00004018, 0x04008000, 0x00000000, 0x00000000, 0x6e616e5f, 0x6d69746f, 
++	0x6f6c5f65, 0x00000077, 0x00004018, 0x2000804e, 0x06004018, 0x00000000, 
++	0x6e616e5f, 0x6d69746f, 0x00000065, 0x06004018, 0x06004018, 0x01000000, 
++	0x6a626f5f, 0x736d5f63, 0x6e655367, 0x00000064, 0x06004018, 0x00004018, 
++	0x00000000, 0x00000400, 0x00000000, 0x6a626f5f, 0x736d5f63, 0x6e655367, 
++	0x00000064, 0x00004018, 0x06004018, 0x00000000, 0x6a626f5f, 0x736d5f63, 
++	0x6e655367, 0x00000064, 0x06004018, 0x06004018, 0x01000000, 0x6a626f5f, 
++	0x73615f63, 0x6e676973, 0x6176695f, 0x00000072, 0x06004018, 0x00004018, 
++	0x00000000, 0x00000400, 0x00000000, 0x6a626f5f, 0x73615f63, 0x6e676973, 
++	0x6176695f, 0x65675f72, 0x6972656e, 0x00000063, 0x00004018, 0x06004018, 
++	0x00000000, 0x6a626f5f, 0x73615f63, 0x6e676973, 0x6176695f, 0x00000072, 
++	0x06004018, 0x06004018, 0x01000000, 0x6a626f5f, 0x73615f63, 0x6e676973, 
++	0x6f6c675f, 0x006c6162, 0x06004018, 0x00004018, 0x00000000, 0x00000400, 
++	0x00000000, 0x6a626f5f, 0x73615f63, 0x6e676973, 0x6f6c675f, 0x5f6c6162, 
++	0x656e6567, 0x00636972, 0x00004018, 0x06004018, 0x00000000, 0x6a626f5f, 
++	0x73615f63, 0x6e676973, 0x6f6c675f, 0x006c6162, 0x06004018, 0x06004018, 
++	0x01000000, 0x6a626f5f, 0x73615f63, 0x6e676973, 0x7274735f, 0x43676e6f, 
++	0x00747361, 0x06004018, 0x00004018, 0x00000000, 0x00000400, 0x00000000, 
++	0x6a626f5f, 0x73615f63, 0x6e676973, 0x7274735f, 0x43676e6f, 0x5f747361, 
++	0x656e6567, 0x00636972, 0x00004018, 0x06004018, 0x00000000, 0x6a626f5f, 
++	0x73615f63, 0x6e676973, 0x7274735f, 0x43676e6f, 0x00747361, 0x06004018, 
++};
++commpage_descriptor sigdata_descriptor =
++{ sigdata, sizeof(sigdata), 0xffff3000, 0, 0 };
++
++static unsigned int badata[] =
++{
++	0xae3aff4b, 0x3e3aff4b, 0xce39ff4b, 0x7239ff4b, 0x0230ff4b, 0x5e32ff4b, 
++	0xb232ff4b, 0x0e33ff4b, 0x4a33ff4b, 0x9a33ff4b, 0x3a34ff4b, 0xae34ff4b, 
++	0x1635ff4b, 0x8235ff4b, 0xda35ff4b, 0x4e36ff4b, 0xd236ff4b, 0x6a37ff4b, 
++	0xb237ff4b, 0x1238ff4b, 0x7e38ff4b, 0x6630ff4b, 0xde30ff4b, 0x5e31ff4b, 
++};
++static commpage_descriptor badata_descriptor_ary[] =
++{
++	{ &badata[ 0], 4, 0xfffefea0, 0, 0 },
++	{ &badata[ 1], 4, 0xfffefeb0, 0, 0 },
++	{ &badata[ 2], 4, 0xfffefec0, 0, 0 },
++	{ &badata[ 3], 4, 0xfffeff00, 0, 0 },
++	{ &badata[ 4], 4, 0xffff8080, 0, 0 },
++	{ &badata[ 5], 4, 0xffff8100, 0, 0 },
++	{ &badata[ 6], 4, 0xffff8140, 0, 0 },
++	{ &badata[ 7], 4, 0xffff8180, 0, 0 },
++	{ &badata[ 8], 4, 0xffff81a0, 0, 0 },
++	{ &badata[ 9], 4, 0xffff8200, 0, 0 },
++	{ &badata[10], 4, 0xffff8220, 0, 0 },
++	{ &badata[11], 4, 0xffff8260, 0, 0 },
++	{ &badata[12], 4, 0xffff82a0, 0, 0 },
++	{ &badata[13], 4, 0xffff82c0, 0, 0 },
++	{ &badata[14], 4, 0xffff82e0, 0, 0 },
++	{ &badata[15], 4, 0xffff84e0, 0, 0 },
++	{ &badata[16], 4, 0xffff8520, 0, 0 },
++	{ &badata[17], 4, 0xffff8580, 0, 0 },
++	{ &badata[18], 4, 0xffff8600, 0, 0 },
++	{ &badata[19], 4, 0xffff8780, 0, 0 },
++	{ &badata[20], 4, 0xffff87a0, 0, 0 },
++	{ &badata[21], 4, 0xffff8f80, 0, 0 },
++	{ &badata[22], 4, 0xffff8fc0, 0, 0 },
++	{ &badata[23], 4, 0xffff9000, 0, 0 },
++};
++commpage_descriptor *ba_descriptors[] =
++{
++	&badata_descriptor_ary[ 0],
++	&badata_descriptor_ary[ 1],
++	&badata_descriptor_ary[ 2],
++	&badata_descriptor_ary[ 3],
++	&badata_descriptor_ary[ 4],
++	&badata_descriptor_ary[ 5],
++	&badata_descriptor_ary[ 6],
++	&badata_descriptor_ary[ 7],
++	&badata_descriptor_ary[ 8],
++	&badata_descriptor_ary[ 9],
++	&badata_descriptor_ary[10],
++	&badata_descriptor_ary[11],
++	&badata_descriptor_ary[12],
++	&badata_descriptor_ary[13],
++	&badata_descriptor_ary[14],
++	&badata_descriptor_ary[15],
++	&badata_descriptor_ary[16],
++	&badata_descriptor_ary[17],
++	&badata_descriptor_ary[18],
++	&badata_descriptor_ary[19],
++	&badata_descriptor_ary[20],
++	&badata_descriptor_ary[21],
++	&badata_descriptor_ary[22],
++	&badata_descriptor_ary[23],
++	0
++};

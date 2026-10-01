@@ -73,7 +73,20 @@ This repository contains only open-source/kernel-side tooling and documentation.
 
 The source work targets Apple's `xnu-1699.32.7` Lion 10.7.5 release and compares it against Snow Leopard 10.6.8 `xnu-1504.15.3`.
 
-The current `patches/xnu-1699.32.7-rosetta.patch` is a **handler-only phase-1 patch**. A source-level translated-commpage restoration is the next implementation step.
+The existing `patches/xnu-1699.32.7-rosetta.patch` remains the **handler-only phase-1 diagnostic patch**. The standalone phase-2 source patch is `patches/xnu-1699.32.7-rosetta-commpage.patch`; it includes the handler change plus the translated 32-bit commpage restoration. It has passed static/source validation but still requires compilation and boot testing.
+
+## Phase-2 source patch workflow
+
+Start from an unmodified Apple `xnu-1699.32.7` source tree. Do **not** apply the phase-1 patch first; phase 2 includes it.
+
+```sh
+cd /path/to/xnu-1699.32.7
+patch --dry-run -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.patch
+patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.patch
+/usr/bin/python /path/to/lion-rosetta-xnu/tools/validate_rosetta_source.py .
+```
+
+Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
 
 ## Handler-only diagnostic workflow
 

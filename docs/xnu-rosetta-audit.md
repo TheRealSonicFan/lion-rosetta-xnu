@@ -108,4 +108,4 @@ A functional Lion Rosetta kernel also needs restoration of Snow Leopard's transl
 
 The implementation must not simply replace Lion's native commpage with Snow Leopard's version: Lion's native commpage format is newer. The intended approach is to retain Lion's native values and add back the translated-only compatibility region.
 
-Until that work is implemented and validated, the handler-only binary kernel patch should be treated as diagnostic rather than a complete Rosetta restoration.
+A standalone phase-2 source patch implementing this translated-commpage restoration is now provided as `patches/xnu-1699.32.7-rosetta-commpage.patch`. It has passed static/source validation against the exact Apple OSS inputs but still requires compilation and Lion boot testing. The handler-only binary kernel patch remains diagnostic rather than a complete Rosetta restoration.
