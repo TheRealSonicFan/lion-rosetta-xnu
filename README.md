@@ -73,7 +73,7 @@ This repository contains only open-source/kernel-side tooling and documentation.
 
 The source work targets Apple's `xnu-1699.32.7` Lion 10.7.5 release and compares it against Snow Leopard 10.6.8 `xnu-1504.15.3`.
 
-The existing `patches/xnu-1699.32.7-rosetta.patch` remains the **handler-only phase-1 diagnostic patch**. The standalone phase-2 source patch is `patches/xnu-1699.32.7-rosetta-commpage.patch`; it includes the handler change plus the translated 32-bit commpage restoration. It has now compiled and linked successfully as both RELEASE_I386 and RELEASE_X86_64 kernels under Lion 10.7.5 with Xcode 4.2.1. Boot/runtime validation of the phase-2 kernel is still pending.
+The existing `patches/xnu-1699.32.7-rosetta.patch` remains the **handler-only phase-1 diagnostic patch**. The standalone phase-2 source patch is `patches/xnu-1699.32.7-rosetta-commpage.patch`; it includes the handler change plus the translated 32-bit commpage restoration. An earlier phase-2 revision compiled for both RELEASE_I386 and RELEASE_X86_64 but exposed an early-boot `nanotime trouble 1` panic caused by Lion's INT3 commpage initialization covering the newly enlarged allocation. The current source patch contains the allocator-bounds fix; it must be rebuilt and boot-tested.
 
 ## Phase-2 source patch workflow
 
@@ -88,7 +88,7 @@ patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.pat
 
 Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
 
-If you applied a phase-2 patch from commit `1b3adcbea2ff385b6322ee04d3d4e8fae3e6c3c2` or earlier, also apply `patches/xnu-1699.32.7-rosetta-commpage-x86_64-hotfix.patch` to that already-patched tree. The earlier revision added `commpage_sigs.c` to the I386 build list but omitted the X86_64 build list.
+If you have an already-patched phase-2 source tree from before the early-boot fix, apply `patches/xnu-1699.32.7-rosetta-commpage-nanotime-hotfix.patch` before rebuilding. Trees from commit `1b3adcbea2ff385b6322ee04d3d4e8fae3e6c3c2` or earlier also need `patches/xnu-1699.32.7-rosetta-commpage-x86_64-hotfix.patch`. See `docs/boot-panic-nanotime.md`.
 
 ## Handler-only diagnostic workflow
 
