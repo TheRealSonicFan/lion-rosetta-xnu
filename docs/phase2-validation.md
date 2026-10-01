@@ -24,7 +24,7 @@ Validated before publication:
 - 32-bit population enables Rosetta compatibility and 64-bit population disables it;
 - every generated unified-diff section was reapplied in memory to the exact upstream base and matched the intended patched content byte-for-byte.
 
-Compilation has now been validated on Lion 10.7.5 with Xcode 4.2.1: both RELEASE_I386 and RELEASE_X86_64 kernels compile, link, and complete the `DSYMUTIL`, `STRIP`, `CTFMERGE`, and `CTFINSERT` stages. Both produced kernels contain `/usr/libexec/oah/translate`. Boot/runtime validation of the phase-2 kernel is not yet claimed.
+The pre-boot-fix phase-2 revision compiled on Lion 10.7.5 with Xcode 4.2.1 for both RELEASE_I386 and RELEASE_X86_64, completing `DSYMUTIL`, `STRIP`, `CTFMERGE`, and `CTFINSERT`; both kernels contained `/usr/libexec/oah/translate`. That revision then exposed an early-boot `nanotime trouble 1` panic. The current source includes the commpage INT3-bounds correction and therefore requires a fresh dual-architecture compile before compilation/boot validation can be re-established for the current revision.
 
 ## Build feedback correction
 
@@ -33,3 +33,9 @@ The first I386 compilation completed and linked with `commpage_sigs.o`. The firs
 ## Successful dual-architecture build
 
 After correcting the X86_64 build-list omission, the X86_64 build explicitly compiled both `commpage_sigs.o` and `commpage.o`, then completed `LD mach_kernel.sys`, `DSYMUTIL mach_kernel.sys`, `STRIP mach_kernel`, `CTFMERGE mach_kernel`, and `CTFINSERT mach_kernel`. The I386 build had already completed the same final pipeline successfully. This validates the phase-2 patch through source application, source validation, compilation, and link for both Lion kernel architectures. Boot and Rosetta execution remain the next validation stages.
+
+## Early-boot nanotime correction
+
+The first universal phase-2 kernel panicked during `rtc_nanotime_init_commpage()` with `nanotime trouble 1`. Root-cause analysis showed that Lion's stock `commpage_allocate()` fills commpage text with `0xCC` from allocation offset `0x80` through the end of the allocation. Enlarging the 32-bit allocation from two pages to 19 pages without changing that loop poisoned the native nanotime data, which moved to allocation offset `0x4050` when the allocation base became `0xfffec000`.
+
+The current patch passes `base_offset` into `commpage_allocate()` and confines the INT3 fill to the native text interval. For the restored 32-bit allocation the fill is `0x4080-0x6000`; for the 64-bit commpage it remains stock Lion's `0x80-0x2000`. The extended Rosetta pages stay zero-filled until explicitly populated. See `docs/boot-panic-nanotime.md`.
