@@ -117,3 +117,10 @@ Lion's exec refactor changed PowerPC redirection in `exec_powerpc32_imgact()`. S
 That behavior is suitable for `#!` scripts but removes the PPC subject exec path Rosetta expects. With the commpage restored, this manifests as `translate` starting successfully, printing its command-line usage, and exiting 1 without a crash or PPC execution.
 
 The phase-2 patch now preserves `ip_strings` across the PowerPC redirect and performs the PowerPC interpreter lookup through `ip_interp_buffer`; ordinary shell interpreters retain Lion's original `ip_strings` lookup path.
+
+
+## Direct translator control
+
+On stock Snow Leopard 10.6.8, invoking `/usr/libexec/oah/translate` directly with the known-good PPC smoke-test path successfully executes the PPC program and exits 0. On the current Lion phase-2 system, the same command segfaults with status 139.
+
+This proves that direct translator invocation is a useful cross-version control and that Lion still has at least one translator-visible incompatibility independent of the normal PowerPC exec-path handoff. The normal Lion PPC launch also still prints translator usage and exits 1; the subject-path hotfix remains plausible for that symptom but should not be treated as the only remaining issue.
