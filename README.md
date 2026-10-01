@@ -4,10 +4,11 @@ Experimental tooling to restore Rosetta 1's PowerPC-on-Intel execution path on M
 
 ## Current status
 
-The project has confirmed two separate kernel-side requirements:
+The project has confirmed three kernel-side compatibility requirements:
 
 1. **PowerPC architecture-handler dispatch** — Lion defaults the handler to `/usr/libexec/oah/RosettaNonGrata`; Snow Leopard uses `/usr/libexec/oah/translate`.
 2. **Translated 32-bit commpage ABI** — Snow Leopard maps and populates additional PPC-facing commpage data that Lion removes.
+3. **PowerPC subject exec-path preservation** — Lion's exec refactor resets the saved exec path to the interpreter; Snow Leopard keeps the PPC subject path available to Rosetta while looking up `translate` separately.
 
 The first requirement is implemented and verified. The first real PPC execution test on Lion reached `translate` but crashed at `0xffff8020`, which is the exact Snow Leopard translated commpage CPU-capabilities slot. See `docs/crash-ffff8020.md`.
 
@@ -88,7 +89,7 @@ patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.pat
 
 Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
 
-If you have an already-patched phase-2 source tree from before the early-boot fix, apply `patches/xnu-1699.32.7-rosetta-commpage-nanotime-hotfix.patch` before rebuilding. Trees from commit `1b3adcbea2ff385b6322ee04d3d4e8fae3e6c3c2` or earlier also need `patches/xnu-1699.32.7-rosetta-commpage-x86_64-hotfix.patch`. See `docs/boot-panic-nanotime.md`.
+For an already-patched phase-2 tree used in the October 1 test sequence, apply `patches/xnu-1699.32.7-rosetta-execpath-hotfix.patch` before the next rebuild. Earlier trees may additionally require the X86_64 and nanotime hotfixes. The standalone phase-2 patch contains all current fixes.
 
 ## Handler-only diagnostic workflow
 
