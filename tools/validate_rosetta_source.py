@@ -71,6 +71,11 @@ def main():
     require(errors, "_COMM_PAGE_ROSETTA_VERSION\t11" in cpu, "Rosetta compatibility version is not 11")
 
     require(errors, "#include <libkern/OSByteOrder.h>" in comm, "explicit OSByteOrder include missing")
+    require(errors, "commpage_address_t base_offset )" in comm, "commpage allocator is not base-offset aware")
+    require(errors, "vm_size_t text_start = _COMM_PAGE_TEXT_START - base_offset;" in comm, "native text initialization start is not base-offset aware")
+    require(errors, "vm_size_t text_end = (_COMM_PAGE_END + 1) - base_offset;" in comm, "native text initialization end is not bounded")
+    require(errors, "commpage_allocate( submap, (vm_size_t) area_used, base_offset )" in comm, "commpage allocator call does not pass base_offset")
+    require(errors, "for( i = _COMM_PAGE_TEXT_START - _COMM_PAGE_START_ADDRESS; i < size; i++ )" not in comm, "old whole-allocation INT3 initialization is still present")
     require(errors, "commpage_stuff_rosetta_swap" in comm, "Rosetta byte-swap helper missing")
     require(errors, all(x in comm for x in ("OSWriteSwapInt16","OSWriteSwapInt32","OSWriteSwapInt64")), "byte-swap widths incomplete")
     require(errors, "rosetta_caps = 0x44" in comm, "PPC capability baseline missing")
@@ -116,6 +121,7 @@ def main():
     print("PASS: Lion native CPU-family population remains present")
     print("PASS: Rosetta data is enabled only for the 32-bit commpage")
     print("PASS: commpage_sigs.c is built into both I386 and X86_64 kernels")
+    print("PASS: Lion native INT3 initialization is confined to the native commpage text range")
     return 0
 
 if __name__ == "__main__":
