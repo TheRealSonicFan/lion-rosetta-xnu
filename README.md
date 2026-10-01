@@ -89,7 +89,7 @@ patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.pat
 
 Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
 
-For an already-patched phase-2 tree used in the October 1 test sequence, apply `patches/xnu-1699.32.7-rosetta-execpath-hotfix.patch` before the next rebuild. Earlier trees may additionally require the X86_64 and nanotime hotfixes. The standalone phase-2 patch contains all current fixes.
+A direct Snow Leopard control (`/usr/libexec/oah/translate ppc-smoketest`) succeeds and exits 0, while the same direct invocation on the current Lion phase-2 system segfaults. Therefore the exec-path hotfix is currently **provisional**: do not rebuild solely for that hotfix until the Lion direct-launch crash has been analyzed. Earlier trees may additionally require the X86_64 and nanotime hotfixes. The standalone phase-2 patch contains the current experimental changes.
 
 ## Handler-only diagnostic workflow
 
