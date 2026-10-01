@@ -73,21 +73,37 @@ Future diagnosis of the Lion direct-launch crash should use non-ptrace evidence 
 
 ## Postmortem direct-translate crash analysis
 
-A non-debugged Lion direct invocation produced a core dump that can be examined postmortem without perturbing the protected translator. The fault is a read from `0xc918a01c` at runtime-decrypted instruction `0xb81605d9`:
+The non-debugged Lion direct invocation produced a usable core dump, and the runtime-decrypted translator text now explains the `0xc918a01c` fault.
 
-```asm
-mov    (%edi),%edx
-mov    %edx,%ecx
-shl    $0x18,%ecx
-...
-mov    %ecx,(%edi)
+The parser containing the fault is called with requested Mach CPU type `0x12` (PowerPC) and subtype `0x0a`. Its object in the core contains the pathname `/usr/lib/dyld`, a raw file mapping at `0xb0189000`, selected slice offset `0x1000`, and selected slice base `0xb018a000`.
+
+The selected slice is not PowerPC. Its header begins:
+
+```
+0xb018a000: 0xfeedfacf 0x01000007 0x00000003 0x00000007
+0xb018a010: 0x0000000b 0x00000710 0x00000085 0x00000000
 ```
 
-The sequence is an in-place 32-bit byte swap. At the fault, `EDI=0xc918a01c`, `EAX=0xb018a000`, and `CR2=0xc918a01c`. The `+0x1c` offset is exactly the size of a 32-bit Mach-O header, making it likely (not yet proven) that this code is byte-swapping Mach-O load-command data at a presumed image mapping whose page base is `0xc918a000`. The crash report shows no mapping at that address.
+This is a little-endian 64-bit x86_64 `MH_DYLINKER` image. Lion's installed `/usr/lib/dyld` contains x86_64 and i386 slices but no PPC slice.
 
-The page-aligned bases `0xb018a000` and `0xc918a000` differ by `0x19000000`. The meaning of that relationship remains under investigation; it should not yet be encoded as a kernel fix.
+The decrypted parser recognizes the 32-bit Mach-O/fat magic values `MH_MAGIC`, `MH_CIGAM`, `FAT_MAGIC`, and `FAT_CIGAM`; the captured code contains no `MH_MAGIC_64` or `MH_CIGAM_64` test. Its fat-architecture scoring also permits the first nonmatching architecture to become the provisional candidate while the best score is `-1`. Thus when no requested PPC architecture exists, the first Lion dyld slice is selected instead of returning "no compatible architecture."
 
-The next diagnostic is to use the existing Lion core to dump the runtime-decrypted translator text around the caller and inspect the referenced structures/mappings. These private runtime dumps are analysis artifacts only and must not be committed to this repository.
+The exact crash sequence is then deterministic:
+
+1. The selected x86_64 slice begins at `0xb018a000`.
+2. The parser advances by `0x1c`, the size of a 32-bit Mach-O header, to `0xb018a01c`.
+3. A 64-bit Mach-O header is `0x20` bytes. Therefore `+0x1c` is its reserved field, not its first load command.
+4. The parser's swap flag is set from the fat-container byte order. It byte-swaps the words it believes are `cmd` and `cmdsize`.
+5. The real first 64-bit command, `LC_SEGMENT_64 == 0x19` at `+0x20`, is therefore changed in place to `0x19000000` and interpreted as `cmdsize`.
+6. The load-command loop executes `edi += *(edi + 4)`, so:
+   `0xb018a01c + 0x19000000 = 0xc918a01c`.
+7. The next loop iteration dereferences that unmapped address and faults.
+
+The supplied memory dump contains the resulting mutated word `0x19000000` at selected-slice offset `0x20`, and the core confirms `0xc918a000` is unmapped.
+
+This resolves the previously unexplained `0x19000000` delta. It is not evidence of a missing Lion VM mapping. The direct-launch failure is a guest-runtime dependency problem: the Snow Leopard Rosetta translator expects a PowerPC-capable guest `/usr/lib/dyld`, while Lion's native dyld no longer provides a PPC slice. No further XNU VM/commpage change should be made to address this specific fault.
+
+The next controlled experiment is to provide a Snow Leopard PPC dyld at a private alternate path and build a disposable PPC smoke executable whose `LC_LOAD_DYLINKER` names that private path. Lion's native `/usr/lib/dyld` must not be replaced. The proprietary dyld image and decrypted translator dumps remain private test artifacts and must not be committed to this repository.
 
 ## DTrace/dtruss limitation
 
