@@ -1,20 +1,20 @@
 diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
 --- a/osfmk/i386/commpage/commpage.c
 +++ b/osfmk/i386/commpage/commpage.c
-@@ -108,8 +108,9 @@
+@@ -110,7 +110,8 @@
  static  void*
  commpage_allocate( 
  	vm_map_t	submap,			// commpage32_map or commpage_map64
--	size_t		area_used )		// _COMM_PAGE32_AREA_USED or _COMM_PAGE64_AREA_USED
 +	size_t		area_used,		// _COMM_PAGE32_AREA_USED or _COMM_PAGE64_AREA_USED
 +	commpage_address_t base_offset )	// runtime address corresponding to allocation offset zero
+-	size_t		area_used )		// _COMM_PAGE32_AREA_USED or _COMM_PAGE64_AREA_USED
  {
  	vm_offset_t	kernel_addr = 0;	// address of commpage in kernel map
  	vm_offset_t	zero = 0;
 @@ -162,10 +163,20 @@
+ 
  	ipc_port_release(handle);
  	
--	// Initialize the text section of the commpage with INT3
 +	/*
 +	 * Lion initializes its native commpage text slots with INT3.  With
 +	 * Rosetta's larger 32-bit allocation, keep that initialization confined
@@ -22,24 +22,24 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
 +	 * pages outside that interval must retain their zero-fill until the
 +	 * Rosetta-specific data below is populated.
 +	 */
+-	// Initialize the text section of the commpage with INT3
  	char *commpage_ptr = (char*)(intptr_t)kernel_addr;
  	vm_size_t i;
--	for( i = _COMM_PAGE_TEXT_START - _COMM_PAGE_START_ADDRESS; i < size; i++ )
 +	vm_size_t text_start = _COMM_PAGE_TEXT_START - base_offset;
 +	vm_size_t text_end = (_COMM_PAGE_END + 1) - base_offset;
 +	if (text_start >= text_end || text_end > size)
 +		panic("invalid commpage text bounds");
 +	for( i = text_start; i < text_end; i++ )
+-	for( i = _COMM_PAGE_TEXT_START - _COMM_PAGE_START_ADDRESS; i < size; i++ )
  		// This is the hex for the X86 opcode INT3
  		commpage_ptr[i] = 0xCC;
  
-@@ -382,7 +393,7 @@
- 	static double rosetta_ten6 = 1000000.0;                       /* 10**6 */
+@@ -383,7 +394,7 @@
  
  	next = 0;
  	cur_routine = 0;
--	commPagePtr = (char *)commpage_allocate( submap, (vm_size_t) area_used );
 +	commPagePtr = (char *)commpage_allocate( submap, (vm_size_t) area_used, base_offset );
+-	commPagePtr = (char *)commpage_allocate( submap, (vm_size_t) area_used );
  	*kernAddressPtr = commPagePtr;				// save address either in commPagePtr32 or 64
  	commPageBaseOffset = base_offset;
  
