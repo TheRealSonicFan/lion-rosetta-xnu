@@ -8,6 +8,7 @@ The phase-2 patch was generated from these exact Apple OSS inputs:
 | `osfmk/i386/cpu_capabilities.h` | `xnu-1699.32.7` | `eee6a8173eb72cffecb8e8e79ba9099b1411fcb4` |
 | `osfmk/i386/commpage/commpage.c` | `xnu-1699.32.7` | `375abc7c1d95353f1f66f662d91c380ce9e7ca01` |
 | `osfmk/conf/files.i386` | `xnu-1699.32.7` | `8c28645275d5d3e5e80f94da1ad9aa5293cff574` |
+| `osfmk/conf/files.x86_64` | `xnu-1699.32.7` | `a147f68de773470cfff9f368028e9537f9d711c9` |
 | `osfmk/i386/commpage/commpage_sigs.c` | `xnu-1504.15.3` | `0c100a2761ea07ab99c26b8a63bf3da4164b5cb5` |
 
 Validated before publication:
@@ -19,8 +20,12 @@ Validated before publication:
 - `commpage.c` explicitly includes `<libkern/OSByteOrder.h>` for the restored byte-swap helpers;
 - all 24 branch-assist descriptors are within the restored mapping;
 - `sigdata_descriptor` is `0xffff3000` and within the mapping;
-- `commpage_sigs.c` is included exactly once in the i386 build list;
+- `commpage_sigs.c` is included exactly once in both the I386 and X86_64 build lists;
 - 32-bit population enables Rosetta compatibility and 64-bit population disables it;
 - every generated unified-diff section was reapplied in memory to the exact upstream base and matched the intended patched content byte-for-byte.
 
 Compilation and boot/runtime validation are deliberately not claimed here; they require the historical Apple build environment and Lion test machine.
+
+## Build feedback correction
+
+The first I386 compilation completed and linked with `commpage_sigs.o`. The first X86_64 compilation exposed a packaging omission in the earlier phase-2 patch: `files.x86_64` did not include `commpage_sigs.c`, so the final link could not resolve `ba_descriptors` and `sigdata_descriptor`. The current phase-2 patch and validator cover both architecture build lists. A minimal hotfix patch is provided for trees already patched with the earlier revision.
