@@ -40,6 +40,7 @@ def main():
     root = os.path.abspath(args.xnu_root)
     rel = {
         "bsd": "bsd/kern/bsd_init.c",
+        "kern_exec": "bsd/kern/kern_exec.c",
         "cpu": "osfmk/i386/cpu_capabilities.h",
         "comm": "osfmk/i386/commpage/commpage.c",
         "sigs": "osfmk/i386/commpage/commpage_sigs.c",
@@ -59,9 +60,12 @@ def main():
             print("FAIL:", e)
         return 2
 
-    bsd, cpu, comm, sigs = data["bsd"], data["cpu"], data["comm"], data["sigs"]
+    bsd, kern_exec, cpu, comm, sigs = data["bsd"], data["kern_exec"], data["cpu"], data["comm"], data["sigs"]
     conf_i386, conf_x86_64 = data["conf_i386"], data["conf_x86_64"]
     require(errors, '.path = "/usr/libexec/oah/translate",' in bsd, "PowerPC handler is not translate")
+    require(errors, "exec_reset_save_path(imgp);" not in kern_exec[kern_exec.find("exec_powerpc32_imgact"):kern_exec.find("#endif\t/* IMGPF_POWERPC */", kern_exec.find("exec_powerpc32_imgact"))], "PowerPC redirect still resets the saved subject path")
+    require(errors, "CAST_USER_ADDR_T(imgp->ip_interp_buffer)" in kern_exec, "PowerPC interpreter lookup does not use ip_interp_buffer")
+    require(errors, "CAST_USER_ADDR_T(imgp->ip_strings)" in kern_exec, "Lion shell-interpreter lookup path was not preserved")
     require(errors, "_COMM_PAGE32_AREA_LENGTH\t( 19 * 4096 )" in cpu, "32-bit area length is not 19 pages")
     require(errors, "_COMM_PAGE32_BASE_ADDRESS\t( 0xfffec000 )" in cpu, "32-bit base is not 0xfffec000")
     require(errors, "_COMM_PAGE32_START_ADDRESS\t( 0xffff0000 )" in cpu, "native start is not 0xffff0000")
@@ -111,6 +115,7 @@ def main():
         for e in errors: print("FAIL:", e)
         return 1
     print("PASS: PowerPC handler -> /usr/libexec/oah/translate")
+    print("PASS: PowerPC subject exec path is preserved across Rosetta redirect")
     print("PASS: Lion native commpage ABI remains version 12")
     print("PASS: Rosetta compatibility ABI is version 11 at +0x8000")
     print("PASS: 32-bit commpage range 0xfffec000-0xfffff000")
