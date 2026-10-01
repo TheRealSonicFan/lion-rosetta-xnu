@@ -53,3 +53,7 @@ This checks patch structure and ABI invariants. It does not substitute for compi
 ## Architecture build lists
 
 Both `osfmk/conf/files.i386` and `osfmk/conf/files.x86_64` must include `osfmk/i386/commpage/commpage_sigs.c`. Both kernel architectures compile `commpage.c` and therefore both need definitions for `ba_descriptors` and `sigdata_descriptor`, even though the compatibility data is populated only into the shared 32-bit commpage.
+
+## Lion INT3 initialization
+
+Lion added an INT3 fill to `commpage_allocate()` that Snow Leopard did not have. Once the 32-bit allocation is enlarged for Rosetta, that fill must not span the entire allocation: doing so overwrites native commpage data and causes an early `nanotime trouble 1` panic. The phase-2 allocator now receives `base_offset` and initializes only the native text interval (`_COMM_PAGE_TEXT_START` through `_COMM_PAGE_END`). Extended compatibility pages remain zero-filled until Rosetta-specific population occurs. See `docs/boot-panic-nanotime.md`.
