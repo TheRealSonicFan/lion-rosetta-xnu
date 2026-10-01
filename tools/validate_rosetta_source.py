@@ -68,6 +68,7 @@ def main():
     require(errors, "_COMM_PAGE_THIS_VERSION\t\t12" in cpu, "Lion native commpage version 12 not preserved")
     require(errors, "_COMM_PAGE_ROSETTA_VERSION\t11" in cpu, "Rosetta compatibility version is not 11")
 
+    require(errors, "#include <libkern/OSByteOrder.h>" in comm, "explicit OSByteOrder include missing")
     require(errors, "commpage_stuff_rosetta_swap" in comm, "Rosetta byte-swap helper missing")
     require(errors, all(x in comm for x in ("OSWriteSwapInt16","OSWriteSwapInt32","OSWriteSwapInt64")), "byte-swap widths incomplete")
     require(errors, "rosetta_caps = 0x44" in comm, "PPC capability baseline missing")

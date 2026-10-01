@@ -38,7 +38,15 @@ diff --git a/osfmk/i386/cpu_capabilities.h b/osfmk/i386/cpu_capabilities.h
 diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
 --- a/osfmk/i386/commpage/commpage.c
 +++ b/osfmk/i386/commpage/commpage.c
-@@ -72,6 +72,10 @@
+@@ -50,6 +50,7 @@
+ #include <mach/vm_map.h>
+ #include <mach/mach_vm.h>
+ #include <mach/machine.h>
++#include <libkern/OSByteOrder.h>
+ #include <i386/cpuid.h>
+ #include <i386/tsc.h>
+ #include <i386/rtclock_protos.h>
+@@ -72,6 +73,10 @@
  extern	commpage_descriptor*	commpage_32_routines[];
  extern	commpage_descriptor*	commpage_64_routines[];
  
@@ -49,7 +57,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  extern vm_map_t	commpage32_map;	// the shared submap, set up in vm init
  extern vm_map_t	commpage64_map;	// the shared submap, set up in vm init
  
-@@ -295,6 +299,34 @@
+@@ -295,6 +300,34 @@
      next = address + length;
  }
  
@@ -84,7 +92,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  /* Copy a routine into comm page if it matches running machine.
   */
  static void
-@@ -332,6 +364,7 @@
+@@ -332,6 +365,7 @@
  	size_t		area_used,	// _COMM_PAGE32_AREA_USED or _COMM_PAGE64_AREA_USED
  	commpage_address_t base_offset,	// will become commPageBaseOffset
  	commpage_descriptor** commpage_routines, // list of routine ptrs for this commpage
@@ -92,7 +100,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  	commpage_time_data** time_data,	// &time_data32 or &time_data64
  	const char*	signature )	// "commpage 32-bit" or "commpage 64-bit"
  {
-@@ -342,6 +375,10 @@
+@@ -342,6 +376,10 @@
  	uint32_t	cfamily;
  	commpage_descriptor **rd;
  	short   version = _COMM_PAGE_THIS_VERSION;
@@ -103,7 +111,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  
  	next = 0;
  	cur_routine = 0;
-@@ -358,6 +395,34 @@
+@@ -358,6 +396,34 @@
  	commpage_stuff(_COMM_PAGE_VERSION,&version,sizeof(short));
  	commpage_stuff(_COMM_PAGE_CPU_CAPABILITIES,&_cpu_capabilities,sizeof(int));
  
@@ -138,7 +146,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  	c2 = 32;  // default
  	if (_cpu_capabilities & kCache64)
  		c2 = 64;
-@@ -389,6 +454,23 @@
+@@ -389,6 +455,23 @@
  	if (next > _COMM_PAGE_END)
  		panic("commpage overflow: next = 0x%08x, commPagePtr = 0x%p", next, commPagePtr);
  
@@ -162,7 +170,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  }
  
  
-@@ -409,6 +491,7 @@
+@@ -409,6 +492,7 @@
  				_COMM_PAGE32_AREA_USED,
  				_COMM_PAGE32_BASE_ADDRESS,
  				commpage_32_routines, 
@@ -170,7 +178,7 @@ diff --git a/osfmk/i386/commpage/commpage.c b/osfmk/i386/commpage/commpage.c
  				&time_data32,
  				"commpage 32-bit");
  #ifndef __LP64__
-@@ -423,6 +506,7 @@
+@@ -423,6 +507,7 @@
  					_COMM_PAGE64_AREA_USED,
  					_COMM_PAGE32_START_ADDRESS, /* commpage address are relative to 32-bit commpage placement */
  					commpage_64_routines, 

@@ -16,6 +16,7 @@ Validated before publication:
 - the translated CPU-capability slot computes to `0xffff8020`;
 - Lion native ABI remains version 12 and the translated view uses version 11;
 - Lion's native CPU-family population remains present;
+- `commpage.c` explicitly includes `<libkern/OSByteOrder.h>` for the restored byte-swap helpers;
 - all 24 branch-assist descriptors are within the restored mapping;
 - `sigdata_descriptor` is `0xffff3000` and within the mapping;
 - `commpage_sigs.c` is included exactly once in the i386 build list;
