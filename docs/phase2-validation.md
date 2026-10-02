@@ -121,3 +121,20 @@ The address shape is significant: `0xc918a01c = 0xc918a000 + 0x1c`, and `0x1c` i
 The same core has `EAX=0xb018a000`, another page-aligned address with the same low offset; its relationship to the missing `0xc918a000` mapping is not yet established and must be verified by postmortem memory inspection before changing XNU again.
 
 The `dtruss` comparison is not treated as execution-path evidence. Both Lion and Snow Leopard traces are perturbed by DTrace/ptrace behavior and contain many invalid-user-access errors; they do not reach the PPC smoke-test load path. The successful Snow Leopard `DYLD_PRINT_LIBRARIES` control does show the PPC target, Rosetta Interposers shim, PPC libSystem, and libmathCommon loading before the smoke test succeeds.
+
+
+## Postmortem root cause: 64-bit Mach-O handed to Rosetta's 32-bit parser
+
+The postmortem core has now isolated the direct-launch crash mechanically. The live Rosetta routine at `0xb81605a4` initializes its load-command cursor as `image_base + 0x1c`, which is the 28-byte header size of a 32-bit Mach-O. At the crash, the relevant readable page at `0xb018a000` is instead an x86_64 64-bit Mach-O header: magic `MH_MAGIC_64` (`0xfeedfacf`), CPU type `0x01000007`, and file type `MH_DYLINKER` (7). Inspection of the dumped page also identifies it as `/usr/lib/dyld`.
+
+Because a 64-bit Mach-O header is 0x20 bytes, Rosetta starts four bytes too early: `+0x1c` is the 64-bit header's reserved word, not the first load command. With byte-swapping enabled, Rosetta leaves that zero reserved word unchanged but byte-swaps the actual first command word at `+0x20`, changing `LC_SEGMENT_64 == 0x19` into the little-endian value `0x19000000`.
+
+The same routine advances the cursor with `edi += *(edi + 4)`. Starting at `0xb018a01c`, the corrupted pseudo-`cmdsize` is therefore `0x19000000`, yielding exactly:
+
+```
+0xb018a01c + 0x19000000 = 0xc918a01c
+```
+
+The next iteration executes `mov (%edi), %edx` at `0xb81605d9` and faults because `0xc918a01c` is unmapped. Separate postmortem probes confirm both `0xc918a000` and `0xc918a01c` are inaccessible.
+
+This explains the direct Lion crash without invoking the translated commpage. The next validation target is why Snow Leopard Rosetta receives a 32-bit/PPC-compatible dyld image while Lion presents an x86_64 dyld slice. In particular, compare `/usr/lib/dyld` architectures on 10.6.8 and 10.7.5 and confirm the pathname stored in the crashing parser frame before designing a runtime workaround.
