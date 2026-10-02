@@ -110,3 +110,14 @@ The next controlled experiment is to provide a Snow Leopard PPC dyld at a privat
 The attempted `dtruss` controls are not behavior-preserving. The Snow Leopard trace reports that DTrace's inserted dyld library could not be loaded and emits repeated invalid-user-access errors; the expected PPC smoke-test stdout is absent. Lion likewise produces no subject stdout under `dtruss`. Therefore those syscall streams are not used as authoritative translator-behavior comparisons.
 
 A separate non-DTrace `DYLD_PRINT_LIBRARIES=1` control on Snow Leopard is valid: it reaches the PPC subject, loads the OAH Interposers shim plus PPC libSystem/libmathCommon, and the smoke test runs. The equivalent Lion direct launch crashes before reaching that guest-library output stage.
+
+
+## Postmortem core result: missing PPC image-header mapping
+
+A Lion direct `translate ppc-smoketest` run was allowed to core-dump and then inspected postmortem, avoiding the live-debugger behavior change. The core reproduces the prior crash PC at `0xb81605d9` with `EDI=0xc918a01c`. The runtime-decrypted instruction at the fault is `mov (%edi), %edx`, followed by an in-place byte-swap sequence over successive 32-bit words.
+
+The address shape is significant: `0xc918a01c = 0xc918a000 + 0x1c`, and `0x1c` is the size of a 32-bit Mach-O header, i.e. the first load-command offset. This strongly indicates that Rosetta is trying to byte-swap/parse the first load command of a PPC Mach-O image whose expected header base is `0xc918a000`, but that page is not mapped on Lion.
+
+The same core has `EAX=0xb018a000`, another page-aligned address with the same low offset; its relationship to the missing `0xc918a000` mapping is not yet established and must be verified by postmortem memory inspection before changing XNU again.
+
+The `dtruss` comparison is not treated as execution-path evidence. Both Lion and Snow Leopard traces are perturbed by DTrace/ptrace behavior and contain many invalid-user-access errors; they do not reach the PPC smoke-test load path. The successful Snow Leopard `DYLD_PRINT_LIBRARIES` control does show the PPC target, Rosetta Interposers shim, PPC libSystem, and libmathCommon loading before the smoke test succeeds.
