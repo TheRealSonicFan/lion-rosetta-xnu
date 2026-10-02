@@ -159,3 +159,20 @@ Lion's on-disk `/usr/lib/libgcc_s.1.dylib` contains x86_64/i386 but no PPC slice
 The current next experiment remains entirely in the runtime layer. The first cache-bypass preflight verified the exact validated Snow Leopard Rosetta cache/map hashes and also established that this map does not list `/usr/lib/libgcc_s.1.dylib`. That is a cache-content fact, not evidence of corruption. The initial runtime runner incorrectly treated membership of that path as an identity requirement and stopped before launching `translate`.
 
 The corrected runtime experiment uses `DYLD_SHARED_CACHE_DONT_VALIDATE=1` for the direct translator process while treating cache-map membership as diagnostic. Its immediate question is whether the guest dyld's stale-libSystem cache rejection disappears. If it does and the next loader failure remains uncached `libgcc_s.1.dylib`, the next boundary is a private runtime-library dependency, not XNU. Do not replace Lion's `/usr/lib` files, do not rebuild the Rosetta cache, and do not set `DYLD_SHARED_REGION=private` for this validation step. The companion `lion-rosetta-runtime` repository contains the guarded procedure.
+
+
+## Cache-bypass result: retired `shared_region_map_np` ABI
+
+The Lion private-dyld experiment with process-local `DYLD_SHARED_CACHE_DONT_VALIDATE=1` moved execution beyond the stale Rosetta-cache validation failure. Guest dyld reported the PPC subject as loaded and no longer printed the prior “ignoring cache” message. The process then terminated with status 140; its non-debugged crash report records `EXC_CRASH (SIGSYS)`, `EIP=0xb815ac07` inside `translate`, and `EAX=0x0000004e`.
+
+Source comparison identifies a specific Snow Leopard-to-Lion syscall ABI removal:
+
+- Apple dyld 132.13 calls `syscall(295, fd, count, mappings)` from its `_shared_region_map_np()` helper.
+- XNU 1504.15.3 syscall 295 is `shared_region_map_np(int fd, uint32_t count, const struct shared_file_mapping_np *mappings)`.
+- XNU 1699.32.7 syscall 295 is `nosys`, annotated `old shared_region_map_np`; Lion provides the newer syscall 438 `shared_region_map_and_slide_np`.
+- XNU `nosys()` sends `SIGSYS` and returns `ENOSYS`.
+- Darwin `ENOSYS` is decimal 78 (`0x4e`), exactly matching the crash `EAX`.
+
+This is strong evidence that restoring the old shared-region syscall ABI is the next XNU compatibility problem exposed by the runtime work. It is distinct from the earlier translated-commpage and PowerPC subject-path fixes.
+
+Do not patch syscall 295 yet solely from the crash report. First use the preserved non-debugged `/cores/core.1090` to disassemble the runtime-decrypted code around `0xb815ac07` and confirm that the SIGSYS follows Rosetta/guest-dyld's legacy shared-region call. If confirmed, prefer a minimal compatibility wrapper using Lion's existing shared-region mapping helpers rather than importing the entire Snow Leopard implementation.
