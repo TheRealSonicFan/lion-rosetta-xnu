@@ -77,6 +77,8 @@ The non-debugged Lion direct invocation produced a usable core dump, and the run
 
 The parser containing the fault is called with requested Mach CPU type `0x12` (PowerPC) and subtype `0x0a`. Its object in the core contains the pathname `/usr/lib/dyld`, a raw file mapping at `0xb0189000`, selected slice offset `0x1000`, and selected slice base `0xb018a000`.
 
+The Snow Leopard 10.6.8 control now closes the architecture question directly: its `/usr/lib/dyld` contains x86_64, i386, and `ppc7400` slices. The Mac OS X 10.6 `mach/machine.h` definition assigns `CPU_SUBTYPE_POWERPC_7400` the value 10, exactly `0x0a`. Thus the dyld slice present on Snow Leopard is not merely PowerPC-compatible in the generic sense; it exactly matches the subtype requested by the Rosetta parser in the Lion core.
+
 The selected slice is not PowerPC. Its header begins:
 
 ```
