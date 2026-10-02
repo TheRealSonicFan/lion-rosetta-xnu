@@ -140,3 +140,20 @@ The same routine advances the cursor with `edi += *(edi + 4)`. Starting at `0xb0
 The next iteration executes `mov (%edi), %edx` at `0xb81605d9` and faults because `0xc918a01c` is unmapped. Separate postmortem probes confirm both `0xc918a000` and `0xc918a01c` are inaccessible.
 
 This explains the direct Lion crash without invoking the translated commpage. The next validation target is why Snow Leopard Rosetta receives a 32-bit/PPC-compatible dyld image while Lion presents an x86_64 dyld slice. In particular, compare `/usr/lib/dyld` architectures on 10.6.8 and 10.7.5 and confirm the pathname stored in the crashing parser frame before designing a runtime workaround.
+
+
+## Lion private-dyld follow-up: parser boundary passed
+
+The controlled private-dyld experiment has now moved the Lion direct-launch failure beyond the former `0xc918a01c` parser crash. The exact Snow Leopard 10.6.8 dyld was staged privately as `/usr/oah/dyld`, and the disposable PPC smoke executable's `LC_LOAD_DYLINKER` was changed only to that private path. Lion's native `/usr/lib/dyld` remained byte-for-byte unchanged.
+
+With the private PPC dyld selected, Rosetta reaches normal guest dynamic-library resolution. The new failure is:
+
+```
+dyld: shared cached file was build against a different libSystem.dylib, ignoring cache
+dyld: Library not loaded: /usr/lib/libgcc_s.1.dylib
+  Reason: no suitable image found.
+```
+
+Lion's on-disk `/usr/lib/libgcc_s.1.dylib` contains x86_64/i386 but no PPC slice. The direct process terminates with status 133 / SIGTRAP after dyld emits that fatal loader diagnostic. This is not recurrence of the earlier SIGSEGV and does not justify another XNU VM/commpage change.
+
+The current next experiment is entirely in the runtime layer: use the already-installed, validated Snow Leopard Rosetta shared cache with `DYLD_SHARED_CACHE_DONT_VALIDATE=1` for the test process, after verifying the exact cache/map hashes and that the map contains the smoke test's PPC system-library dependencies. Do not replace Lion's `/usr/lib` files, do not rebuild the Rosetta cache, and do not set `DYLD_SHARED_REGION=private` for this first cache-validation experiment. The companion `lion-rosetta-runtime` repository contains the guarded procedure.
