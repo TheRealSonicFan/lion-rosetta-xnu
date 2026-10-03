@@ -90,7 +90,7 @@ patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.pat
 
 Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
 
-The syscall-295 experiment is now prepared. After the existing phase-2 source validates, follow `docs/xnu-syscall-295-experiment.md` and use `tools/apply_syscall295_source.py` for the checked source edit. `patches/xnu-1699.32.7-rosetta-syscall295.patch` is retained as the human-readable review diff, not the authoritative application mechanism. The experiment reuses Lion's existing shared-region mapping helpers rather than porting Snow Leopard's implementation wholesale.
+The syscall-295 experiment has now passed on Lion 10.7.5: both kernel architectures built successfully, the post-boot commpage regression remained clean, the native syscall-routing probe reached the compatibility front-end without SIGSYS, and the guarded direct Rosetta smoke test exited 0. `docs/xnu-syscall-295-experiment.md` records the validated result. The next layer is normal PPC exec activation, handled by the companion runtime repository's `docs/lion-normal-ppc-exec-experiment.md`.
 
 A direct Snow Leopard control (`/usr/libexec/oah/translate ppc-smoketest`) succeeds and exits 0, while the same direct invocation on the current Lion phase-2 system segfaults. Therefore the exec-path hotfix is currently **provisional**: do not rebuild solely for that hotfix until the Lion direct-launch crash has been analyzed. Earlier trees may additionally require the X86_64 and nanotime hotfixes. The standalone phase-2 patch contains the current experimental changes.
 
