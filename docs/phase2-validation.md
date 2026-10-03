@@ -176,3 +176,14 @@ Source comparison identifies a specific Snow Leopard-to-Lion syscall ABI removal
 This is strong evidence that restoring the old shared-region syscall ABI is the next XNU compatibility problem exposed by the runtime work. It is distinct from the earlier translated-commpage and PowerPC subject-path fixes.
 
 The preserved non-debugged `/cores/core.1090` has now confirmed the boundary. Runtime-decrypted code executes `int $0x80` at `0xb815ac05`; the crash EIP is the following `setb %cl`, with `EAX=0x4e` and carry set. The caller explicitly supplies syscall number `0x127` (295), and the wrapper frame reconstructs `fd=4`, `mappingCount=3`, and a mapping-array pointer. Those three `shared_file_mapping_np` records span the validated Rosetta shared cache exactly, ending at file size 209,248,256 bytes. This closes the postmortem confirmation gate. The next XNU work should be design-first: prefer a minimal compatibility wrapper using Lion's existing shared-region mapping helpers rather than importing the entire Snow Leopard implementation.
+
+
+## Shared-region compatibility design review
+
+The source-design pass is complete and is recorded in `docs/shared-region-map-np-compatibility-design.md`.
+
+The important result is that Lion already retains the machinery needed by Rosetta. Its `bsd/vm/vm_unix.c` contains `shared_region_copyin_mappings()` and `_shared_region_map()`, used by syscall 438, and its `vm_shared_region_map_file()` accepts a null slide-output pointer. The `shared_file_mapping_np` layout is unchanged from Snow Leopard, and Lion still declares `shared_region_map_np()` in `osfmk/mach/shared_region.h`.
+
+Therefore the implementation phase should restore syscall-table entry 295 and add only a thin three-argument compatibility front-end that reuses Lion's helpers. It should not import the Snow Leopard syscall body, alter syscall 438, or modify the lower shared-region VM implementation unless compilation/static validation demonstrates a concrete need.
+
+The implementation has intentionally not started yet. The next official phase begins only after this design is accepted.
