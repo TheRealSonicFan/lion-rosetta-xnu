@@ -4,7 +4,7 @@
 
 The postmortem confirmation gate is closed. The preserved Lion core proves that the cache-bypass failure is a call to legacy syscall 295 with the Snow Leopard `shared_region_map_np` ABI, not an inferred or adjacent failure.
 
-The design has now been translated into a separate experiment-only patch at `patches/xnu-1699.32.7-rosetta-syscall295.patch`. It is intentionally layered on top of the existing phase-2 patch and has not been folded into `xnu-1699.32.7-rosetta-commpage.patch`. The authoritative execution procedure is `docs/xnu-syscall-295-experiment.md`.
+The design has now been translated into a separate experiment-only source edit. `patches/xnu-1699.32.7-rosetta-syscall295.patch` remains the human-readable review diff, while `tools/apply_syscall295_source.py` is the authoritative application mechanism used by the experiment. The semantic applicator was added after a reused, otherwise validated Lion source tree rejected the context-sensitive `vm_unix.c` diff hunk. The edit is intentionally layered on top of the existing phase-2 patch and has not been folded into `xnu-1699.32.7-rosetta-commpage.patch`. The authoritative execution procedure is `docs/xnu-syscall-295-experiment.md`.
 
 ## Evidence that fixes the ABI
 
@@ -73,7 +73,7 @@ The prepared experiment implementation follows this smallest practical surface:
 2. Add a `shared_region_map_np` compatibility front-end in Lion `bsd/vm/vm_unix.c`.
 3. Reuse Lion's `shared_region_copyin_mappings()` and `_shared_region_map()`.
 4. Pass no slide request and no slide-output object. The validated Rosetta mappings use only ordinary protections 1, 3, and 5 and contain no `VM_PROT_SLIDE` bit.
-5. Preserve the historical maximum of eight mapping records and the old ABI's invalid-count behavior.
+5. Preserve the historical maximum of eight mapping records and the old ABI's invalid-count behavior. Do not short-circuit a zero mapping count before Lion's existing file-descriptor validation; Snow Leopard validated the fd before reaching its zero-count success path.
 6. Keep Lion's own vnode, MAC, content-protection, root-volume, ownership, shared-region, and `VSHARED_DYLD` checks. Do not replace them with the older Snow Leopard checks.
 7. Leave syscall 438 and Lion's sliding implementation unchanged.
 8. Do not change `osfmk/vm/vm_shared_region.c` or `osfmk/mach/shared_region.h` unless static validation exposes a concrete need.
