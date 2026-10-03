@@ -160,7 +160,7 @@ def main():
 
     new_syscalls = syscalls.replace(OLD_SYSCALL, NEW_SYSCALL, 1)
     new_vm_unix = vm_unix.replace(VM_INSERT_ANCHOR,
-                                  "\n" + COMPAT_FUNCTION + "int\n_shared_region_slide(uint32_t slide,",
+                                  COMPAT_FUNCTION + "int\n_shared_region_slide(uint32_t slide,",
                                   1)
 
     if classify_syscalls(new_syscalls) != "patched":
@@ -179,7 +179,7 @@ def main():
         print("FAIL: post-write verification failed")
         return 2
 
-    print("PASS: syscall 295 source edit applied atomically")
+    print("PASS: syscall 295 source edit applied and verified")
     print("PASS: only bsd/kern/syscalls.master and bsd/vm/vm_unix.c were modified")
     return 0
 
