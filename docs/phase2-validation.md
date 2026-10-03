@@ -212,3 +212,14 @@ After reboot:
 This confirms the old syscall-295 ABI restoration is sufficient for the previously observed shared-region `SIGSYS/ENOSYS` boundary and does not regress the translated commpage.
 
 The next untested layer is normal PowerPC exec activation on the same kernel/runtime stack. The authoritative next procedure is in the companion runtime repository at `docs/lion-normal-ppc-exec-experiment.md`. Do not broaden the kernel patch or add guest libraries before that normal-exec result is reviewed.
+
+
+## Normal PowerPC exec result: PASS
+
+The same syscall-295 experiment kernel has now passed a normal PowerPC `execve` control, not only the manual direct-`translate` control.
+
+With the validated private PPC dyld and process-local Rosetta cache-validation bypass retained, the kernel recognized the PPC subject, dispatched through `/usr/libexec/oah/translate`, preserved the subject path, loaded the expected Rosetta guest runtime, printed the PPC smoke-test marker, and exited 0. No new crash/core diagnostic was produced.
+
+This confirms the PowerPC subject-path correction in the running kernel together with the translated commpage and syscall-295 restoration.
+
+No further XNU change is indicated by this result. The next work moves back to runtime compatibility expansion, beginning with a controlled PPC CoreFoundation command-line probe in the companion runtime repository.
