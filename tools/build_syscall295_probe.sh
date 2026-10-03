@@ -36,7 +36,7 @@ try_compiler() {
 
     echo "Probing compiler: $compiler" >&2
     /bin/rm -f "$OUT"
-    if "$compiler" -arch i386 -mmacosx-version-min=10.6 -Wall -Wextra         "$SRC" -o "$OUT"; then
+    if "$compiler" -arch i386 -mmacosx-version-min=10.7 -Wall -Wextra         "$SRC" -o "$OUT"; then
         if [ -f "$OUT" ] && is_i386_macho "$OUT"; then
             CC_SELECTED="$compiler"
             return 0
