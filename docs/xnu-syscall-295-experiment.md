@@ -171,7 +171,7 @@ Do not edit `syscalls.master`, `vm_unix.c`, or any generated syscall file manual
 
 Build the probe before changing the boot kernel, but do not execute it yet.
 
-From a convenient working directory on Lion:
+From the patched `xnu-1699.32.7` source root on Lion:
 
 ```sh
 /bin/bash "$ROSETTA_XNU/tools/build_syscall295_probe.sh" ./syscall295-probe
@@ -314,13 +314,20 @@ sudo /path/to/lion-rosetta-xnu/tools/rollback_kernel.sh   /var/backups/lion-rose
 
 After a successful reboot, do not run Rosetta yet.
 
+Re-establish the path variables because the reboot clears the prior shell environment:
+
+```sh
+export ROSETTA_XNU=/path/to/lion-rosetta-xnu
+export XNU_SRC=/path/to/xnu-1699.32.7
+```
+
 Record:
 
 ```sh
 /usr/bin/uname -a
 /usr/sbin/sysctl kern.exec.archhandler.powerpc
 /usr/bin/shasum -a 256 /mach_kernel
-cat /path/to/xnu-1699.32.7/mach_kernel.rosetta-syscall295.sha256
+cat "$XNU_SRC/mach_kernel.rosetta-syscall295.sha256"
 ```
 
 The installed `/mach_kernel` hash must equal the candidate hash recorded before installation.
@@ -356,10 +363,13 @@ If the probe is no longer available, stop and reproduce it exactly according to 
 
 ## Phase J — run the syscall-295 routing probe
 
-Only after the commpage probe passes, run the previously built i386 syscall probe:
+Only after the commpage probe passes, run the previously built i386 syscall probe from the XNU source directory:
 
 ```sh
-/bin/bash "$ROSETTA_XNU/tools/run_syscall295_probe.sh"   ./syscall295-probe   ./syscall295-probe.log
+cd "$XNU_SRC"
+/bin/bash "$ROSETTA_XNU/tools/run_syscall295_probe.sh" \
+  "$XNU_SRC/syscall295-probe" \
+  "$XNU_SRC/syscall295-probe.log"
 ```
 
 The required success output is:
