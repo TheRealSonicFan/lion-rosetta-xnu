@@ -187,3 +187,28 @@ The important result is that Lion already retains the machinery needed by Rosett
 Therefore the implementation phase should restore syscall-table entry 295 and add only a thin three-argument compatibility front-end that reuses Lion's helpers. It should not import the Snow Leopard syscall body, alter syscall 438, or modify the lower shared-region VM implementation unless compilation/static validation demonstrates a concrete need.
 
 The implementation is now prepared as a separate experiment-only patch and validation/probe set. It remains outside the standalone phase-2 patch so this compatibility change can be tested independently. Follow `docs/xnu-syscall-295-experiment.md`; do not fold the result into phase 2 until the experiment is reviewed.
+
+
+## Syscall-295 experiment result: PASS
+
+The isolated syscall-295 compatibility experiment has now passed through build, boot, native regression gates, and the guarded direct Rosetta control.
+
+Observed validated kernel:
+
+- universal `mach_kernel.rosetta-syscall295` SHA-256: `fe68467b60b3bd7edfab61b2d6c8af7f988de5206c4b7b624151dc9f1a1061d3`;
+- booted Lion 10.7.5 build `11G63`;
+- PowerPC handler remained `/usr/libexec/oah/translate`.
+
+Both RELEASE_I386 and RELEASE_X86_64 builds regenerated the syscall artifacts from `bsd/kern/syscalls.master` and completed the final `LD mach_kernel.sys`, `DSYMUTIL`, `STRIP`, `CTFMERGE`, and `CTFINSERT` pipeline.
+
+After reboot:
+
+- the existing translated-commpage probe still reported `RESULT: PASS`;
+- the native i386 syscall-295 routing probe returned `EBADF` with no `SIGSYS` and exited 0;
+- the guarded direct Rosetta private-dyld/cache-bypass test loaded the PPC subject, Rosetta Interposers, PPC libSystem, and libmathCommon, printed the PPC smoke-test message, and exited 0;
+- no new crash/core diagnostic was produced by that direct control;
+- Lion's native `/usr/lib/dyld` and the private `/usr/oah/dyld` hashes remained unchanged.
+
+This confirms the old syscall-295 ABI restoration is sufficient for the previously observed shared-region `SIGSYS/ENOSYS` boundary and does not regress the translated commpage.
+
+The next untested layer is normal PowerPC exec activation on the same kernel/runtime stack. The authoritative next procedure is in the companion runtime repository at `docs/lion-normal-ppc-exec-experiment.md`. Do not broaden the kernel patch or add guest libraries before that normal-exec result is reviewed.
