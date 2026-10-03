@@ -106,8 +106,8 @@ def main():
             "compatibility front-end does not preserve the eight-mapping limit")
     require(errors, "mappings_count > 8" in body,
             "compatibility front-end does not reject mapping counts above eight")
-    require(errors, "mappings_count == 0" in body and "return 0;" in body,
-            "compatibility front-end does not preserve zero-mapping success")
+    require(errors, "mappings_count == 0" not in body,
+            "compatibility front-end incorrectly bypasses legacy fd validation for zero mappings")
     require(errors, "shared_region_copyin_mappings(p, uap->mappings" in body,
             "compatibility front-end does not reuse Lion shared_region_copyin_mappings")
     require(errors, "_shared_region_map(p, uap->fd, mappings_count, mappings," in body,
