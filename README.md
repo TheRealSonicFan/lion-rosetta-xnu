@@ -4,13 +4,14 @@ Experimental tooling to restore Rosetta 1's PowerPC-on-Intel execution path on M
 
 ## Current status
 
-The project has confirmed three kernel-side compatibility requirements:
+The project has confirmed four kernel-side compatibility requirements:
 
 1. **PowerPC architecture-handler dispatch** — Lion defaults the handler to `/usr/libexec/oah/RosettaNonGrata`; Snow Leopard uses `/usr/libexec/oah/translate`.
 2. **Translated 32-bit commpage ABI** — Snow Leopard maps and populates additional PPC-facing commpage data that Lion removes.
 3. **PowerPC subject exec-path preservation** — Lion's exec refactor resets the saved exec path to the interpreter; Snow Leopard keeps the PPC subject path available to Rosetta while looking up `translate` separately.
+4. **Legacy shared-region syscall 295** — Snow Leopard dyld calls `shared_region_map_np` to populate the PPC shared cache. Lion leaves the old API declarations and mapping machinery in place but routes syscall 295 to `nosys`.
 
-The first requirement is implemented and verified. The first real PPC execution test on Lion reached `translate` but crashed at `0xffff8020`, which is the exact Snow Leopard translated commpage CPU-capabilities slot. See `docs/crash-ffff8020.md`.
+The first three requirements are represented in the current phase-2 source patch. The fourth is now confirmed by a non-debugged Rosetta core and is design-complete but not yet implemented. See `docs/shared-region-map-np-compatibility-design.md` and `docs/phase2-validation.md`.
 
 **Therefore the existing handler-only source/binary patch is phase 1, not a complete Rosetta restoration. Do not treat a successful `sysctl kern.exec.archhandler.powerpc` result as proof that PPC applications can run yet.**
 
@@ -88,6 +89,8 @@ patch -p1 < /path/to/lion-rosetta-xnu/patches/xnu-1699.32.7-rosetta-commpage.pat
 ```
 
 Proceed to kernel compilation only after the validator passes. See `docs/translated-commpage.md` and `docs/phase2-validation.md`.
+
+The next kernel change has not started yet. Its reviewed scope is the minimal syscall-295 compatibility front-end described in `docs/shared-region-map-np-compatibility-design.md`; it should reuse Lion's existing shared-region mapping helpers rather than porting Snow Leopard's implementation wholesale.
 
 A direct Snow Leopard control (`/usr/libexec/oah/translate ppc-smoketest`) succeeds and exits 0, while the same direct invocation on the current Lion phase-2 system segfaults. Therefore the exec-path hotfix is currently **provisional**: do not rebuild solely for that hotfix until the Lion direct-launch crash has been analyzed. Earlier trees may additionally require the X86_64 and nanotime hotfixes. The standalone phase-2 patch contains the current experimental changes.
 
