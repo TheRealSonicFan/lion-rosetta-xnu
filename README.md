@@ -136,3 +136,6 @@ Replacing a kernel or kernelcache can make a machine unbootable. Keep a known-go
 ## License
 
 Original scripts and documentation in this repository are under the MIT License. Apple's XNU source remains governed by the Apple Public Source License and upstream notices. No Apple proprietary Rosetta binaries are included.
+
+
+The current syscall-295 kernel has also passed the runtime project's normal PPC CoreFoundation command-line test. That result produced no new kernel boundary. The next controlled expansion is a Carbon GUI/window-event-loop test in the companion runtime repository; no additional XNU change is currently indicated.
