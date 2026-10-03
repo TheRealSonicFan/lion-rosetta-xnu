@@ -13,7 +13,7 @@ diff --git a/bsd/kern/syscalls.master b/bsd/kern/syscalls.master
 diff --git a/bsd/vm/vm_unix.c b/bsd/vm/vm_unix.c
 --- a/bsd/vm/vm_unix.c
 +++ b/bsd/vm/vm_unix.c
-@@ -1418,9 +1418,43 @@
+@@ -1418,10 +1418,44 @@
  	SHARED_REGION_TRACE_DEBUG(
  		("shared_region: %p [%d(%s)] <- map\n",
  		 current_thread(), p->p_pid, p->p_comm));
