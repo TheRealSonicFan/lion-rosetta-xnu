@@ -489,3 +489,20 @@ The experiment has three ordered gates:
 3. Guarded direct Rosetta experiment: no recurrence of the syscall-295 `SIGSYS/ENOSYS` boundary.
 
 Only the evidence from gate 3 determines the next Rosetta compatibility step.
+
+
+## Observed result: PASS
+
+This experiment has now completed successfully on Lion 10.7.5.
+
+The universal candidate and booted `/mach_kernel` both had SHA-256:
+
+```text
+fe68467b60b3bd7edfab61b2d6c8af7f988de5206c4b7b624151dc9f1a1061d3
+```
+
+Both architecture builds completed their final link/post-link pipeline, both lipo comparison statuses were 0, the commpage regression probe passed, and the native syscall-295 probe returned `EBADF` with `saw_sigsys=0`.
+
+The guarded direct Rosetta control then succeeded with status 0 and the expected PPC smoke-test message. No new crash/core diagnostic was detected.
+
+Therefore the experiment's three ordered gates all passed. Stop treating syscall 295 as the current boundary. The next layer is normal PPC exec activation, documented in the companion runtime repository at `docs/lion-normal-ppc-exec-experiment.md`.
