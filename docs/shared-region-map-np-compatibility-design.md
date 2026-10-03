@@ -4,7 +4,7 @@
 
 The postmortem confirmation gate is closed. The preserved Lion core proves that the cache-bypass failure is a call to legacy syscall 295 with the Snow Leopard `shared_region_map_np` ABI, not an inferred or adjacent failure.
 
-No kernel implementation is included in this document. This is the design baseline to review before the next XNU patch is generated.
+The design has now been translated into a separate experiment-only patch at `patches/xnu-1699.32.7-rosetta-syscall295.patch`. It is intentionally layered on top of the existing phase-2 patch and has not been folded into `xnu-1699.32.7-rosetta-commpage.patch`. The authoritative execution procedure is `docs/xnu-syscall-295-experiment.md`.
 
 ## Evidence that fixes the ABI
 
@@ -67,7 +67,7 @@ Lion's newer syscall 438, `shared_region_map_and_slide_np`, already uses those h
 
 ## Proposed implementation boundary
 
-When implementation officially starts, limit the source change to the smallest practical surface:
+The prepared experiment implementation follows this smallest practical surface:
 
 1. Restore syscall-table entry 295 in `bsd/kern/syscalls.master` with the original three-argument Snow Leopard prototype and `NO_SYSCALL_STUB`.
 2. Add a `shared_region_map_np` compatibility front-end in Lion `bsd/vm/vm_unix.c`.
@@ -88,7 +88,7 @@ The compatibility patch should modify the master definition rather than hand-mai
 
 ## Validation required before installation
 
-The implementation phase should add static validation for all of the following:
+The prepared `tools/validate_syscall295_source.py` checks the following before compilation:
 
 - syscall 295 is no longer `nosys`;
 - syscall 295 has exactly the Snow Leopard three-argument prototype;
@@ -102,7 +102,7 @@ Both RELEASE_I386 and RELEASE_X86_64 kernels must compile because the project in
 
 ## Safer post-boot preflight
 
-Before Rosetta is rerun, add a small native i386 diagnostic that invokes syscall 295 with an intentionally invalid file descriptor and one readable dummy mapping record.
+Before Rosetta is rerun, use the prepared native i386 diagnostic in `tools/syscall295_probe.c`, built by `tools/build_syscall295_probe.sh` and executed through `tools/run_syscall295_probe.sh`. It invokes syscall 295 with an intentionally invalid file descriptor and one readable dummy mapping record.
 
 The expected result is an ordinary `EBADF` syscall error, not `SIGSYS`. This proves that syscall 295 reaches the compatibility front-end without mapping a shared cache or launching Rosetta.
 
