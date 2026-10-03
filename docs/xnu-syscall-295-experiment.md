@@ -18,6 +18,7 @@ The repository now contains:
 
 ```text
 patches/xnu-1699.32.7-rosetta-syscall295.patch
+tools/apply_syscall295_source.py
 tools/validate_syscall295_source.py
 tools/syscall295_probe.c
 tools/build_syscall295_probe.sh
@@ -140,30 +141,53 @@ If the exact source tree used for the already boot-tested phase-2 kernel is bein
 
 Proceed only if it passes before the syscall-295 patch is applied.
 
-## Phase C — apply only the syscall-295 compatibility patch
+## Phase C — apply only the syscall-295 compatibility source edit
 
-From the XNU source root:
+The first version of this runbook used a normal unified-diff dry run. One validated Lion source tree accepted the `syscalls.master` hunk but rejected the `vm_unix.c` hunk because that hunk depended on surrounding text context. The failure did **not** identify a syscall-design problem; it showed that the text patch was too context-sensitive for a reused historical source tree.
 
-```sh
-patch --dry-run -p1 < "$ROSETTA_XNU/patches/xnu-1699.32.7-rosetta-syscall295.patch"
-```
+The repository now uses a semantic source applicator for the experiment. It validates the exact syscall-295 old/new states and inserts the compatibility front-end immediately before Lion's unique `_shared_region_slide()` definition. It refuses ambiguous or partially applied source.
 
-The dry run must complete with no failed or offset/reversed hunks.
-
-Then apply it:
+If an earlier dry run created reject files, remove only those reject artifacts first:
 
 ```sh
-patch -p1 < "$ROSETTA_XNU/patches/xnu-1699.32.7-rosetta-syscall295.patch"
+rm -f bsd/kern/syscalls.master.rej bsd/vm/vm_unix.c.rej
 ```
 
-Run both validators:
+Do **not** manually edit either source file.
+
+From the XNU source root, perform the replacement dry run as a semantic check:
+
+```sh
+/usr/bin/python "$ROSETTA_XNU/tools/apply_syscall295_source.py" --check .
+```
+
+Required state before application:
+
+```text
+syscalls.master state=unpatched
+vm_unix.c state=unpatched
+PASS: semantic syscall-295 anchors are valid
+READY: no source file was modified
+```
+
+If either file reports `invalid` or the tree reports a partial application, stop and preserve the output. Do not force the edit.
+
+Apply the prepared edit:
+
+```sh
+/usr/bin/python "$ROSETTA_XNU/tools/apply_syscall295_source.py" --apply .
+```
+
+Then run both validators:
 
 ```sh
 /usr/bin/python "$ROSETTA_XNU/tools/validate_rosetta_source.py" .
 /usr/bin/python "$ROSETTA_XNU/tools/validate_syscall295_source.py" .
 ```
 
-Both must report PASS.
+Both validators must report PASS.
+
+The file `patches/xnu-1699.32.7-rosetta-syscall295.patch` remains in the repository as the human-readable review diff for the exact intended change. For this experiment, the semantic applicator above is the authoritative application method.
 
 Do not edit `syscalls.master`, `vm_unix.c`, or any generated syscall file manually after validation.
 
