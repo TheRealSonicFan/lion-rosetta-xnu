@@ -1,0 +1,60 @@
+diff --git a/bsd/kern/syscalls.master b/bsd/kern/syscalls.master
+--- a/bsd/kern/syscalls.master
++++ b/bsd/kern/syscalls.master
+@@ -444,7 +444,7 @@
+ 292	AUE_MKDIR_EXTENDED	ALL	{ int mkdir_extended(user_addr_t path, uid_t uid, gid_t gid, int mode, user_addr_t xsecurity) NO_SYSCALL_STUB; } 
+ 293	AUE_IDENTITYSVC	ALL	{ int identitysvc(int opcode, user_addr_t message) NO_SYSCALL_STUB; } 
+ 294	AUE_NULL	ALL	{ int shared_region_check_np(uint64_t *start_address) NO_SYSCALL_STUB; }
+-295	AUE_NULL	ALL	{ int nosys(void); } { old shared_region_map_np }
++295	AUE_NULL	ALL	{ int shared_region_map_np(int fd, uint32_t count, const struct shared_file_mapping_np *mappings) NO_SYSCALL_STUB; }
+ 296	AUE_NULL	ALL	{ int vm_pressure_monitor(int wait_for_pressure, int nsecs_monitored, uint32_t *pages_reclaimed); }
+ #if PSYNCH
+ 297	AUE_NULL	ALL	{ uint32_t psynch_rw_longrdlock(user_addr_t rwlock, uint32_t lgenval, uint32_t ugenval, uint32_t rw_wc, int flags)  NO_SYSCALL_STUB; }
+diff --git a/bsd/vm/vm_unix.c b/bsd/vm/vm_unix.c
+--- a/bsd/vm/vm_unix.c
++++ b/bsd/vm/vm_unix.c
+@@ -1418,9 +1418,43 @@
+ 	SHARED_REGION_TRACE_DEBUG(
+ 		("shared_region: %p [%d(%s)] <- map\n",
+ 		 current_thread(), p->p_pid, p->p_comm));
+ 
+ 	return error;
+ }
+ 
++/*
++ * Compatibility entry point for Snow Leopard dyld/Rosetta.
++ * Lion retained the mapping machinery but retired syscall 295.
++ */
++int
++shared_region_map_np(
++	struct proc				*p,
++	struct shared_region_map_np_args	*uap,
++	__unused int				*retvalp)
++{
++	struct shared_file_mapping_np	*mappings;
++	struct shared_file_mapping_np	stack_mappings[8];
++	unsigned int			mappings_count;
++	int				error;
++
++	mappings_count = uap->count;
++	if (mappings_count == 0) {
++		return 0;
++	}
++	if (mappings_count > 8) {
++		return EINVAL;
++	}
++
++	mappings = &stack_mappings[0];
++	error = shared_region_copyin_mappings(p, uap->mappings,
++					      mappings_count, mappings);
++	if (error) {
++		return error;
++	}
++
++	return _shared_region_map(p, uap->fd, mappings_count, mappings,
++				  NULL, NULL);
++}
++
+ int
+ _shared_region_slide(uint32_t slide,
+ 			mach_vm_offset_t	entry_start_address,
