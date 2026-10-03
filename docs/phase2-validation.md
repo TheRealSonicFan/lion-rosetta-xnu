@@ -186,4 +186,4 @@ The important result is that Lion already retains the machinery needed by Rosett
 
 Therefore the implementation phase should restore syscall-table entry 295 and add only a thin three-argument compatibility front-end that reuses Lion's helpers. It should not import the Snow Leopard syscall body, alter syscall 438, or modify the lower shared-region VM implementation unless compilation/static validation demonstrates a concrete need.
 
-The implementation has intentionally not started yet. The next official phase begins only after this design is accepted.
+The implementation is now prepared as a separate experiment-only patch and validation/probe set. It remains outside the standalone phase-2 patch so this compatibility change can be tested independently. Follow `docs/xnu-syscall-295-experiment.md`; do not fold the result into phase 2 until the experiment is reviewed.
