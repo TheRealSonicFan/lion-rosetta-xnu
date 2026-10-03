@@ -55,4 +55,7 @@ if [ "$STATUS" -eq 0 ] &&
 fi
 
 echo "RESULT: FAIL" | /usr/bin/tee -a "$LOG"
+if [ "$STATUS" -eq 0 ]; then
+    exit 1
+fi
 exit "$STATUS"
