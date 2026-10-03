@@ -223,3 +223,14 @@ With the validated private PPC dyld and process-local Rosetta cache-validation b
 This confirms the PowerPC subject-path correction in the running kernel together with the translated commpage and syscall-295 restoration.
 
 No further XNU change is indicated by this result. The next work moves back to runtime compatibility expansion, beginning with a controlled PPC CoreFoundation command-line probe in the companion runtime repository.
+
+
+## PPC CoreFoundation result: PASS
+
+The syscall-295 experiment kernel has now also passed a normal 32-bit PowerPC CoreFoundation command-line test under Rosetta.
+
+The exact Snow Leopard-positive-control executable loaded CoreFoundation and its dependent PPC runtime libraries, successfully exercised CFString and CFArray operations, printed the expected marker, exited 0, and produced no new crash/core diagnostic.
+
+The kernel, private dyld, Lion native dyld, and Rosetta cache hashes remained unchanged.
+
+No new XNU compatibility change is indicated by this result. The next work remains in user-space compatibility expansion: the companion runtime repository now contains the first controlled Carbon GUI/window-event-loop experiment.
