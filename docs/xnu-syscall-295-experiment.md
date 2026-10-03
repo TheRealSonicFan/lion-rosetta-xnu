@@ -177,7 +177,7 @@ From a convenient working directory on Lion:
 /bin/bash "$ROSETTA_XNU/tools/build_syscall295_probe.sh" ./syscall295-probe
 ```
 
-The output must be an i386 Mach-O executable.
+The output must be an i386 Mach-O executable targeting Lion. The builder uses `-mmacosx-version-min=10.7`.
 
 Preserve its hash:
 
@@ -195,6 +195,7 @@ From the patched `xnu-1699.32.7` source root:
 export CC=/usr/bin/gcc
 export CXX=/usr/bin/g++
 
+make clean
 rm -rf BUILD/obj/RELEASE_I386
 rm -rf BUILD/obj/RELEASE_X86_64
 ```
