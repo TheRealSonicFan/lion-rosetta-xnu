@@ -304,3 +304,14 @@ Snow Leopard's i386 LaunchServices error path calls its explicit Rosetta require
 The first static analyzer also had symbol-name/reporting limitations, so the exact Lion enclosing function/flag has not yet been proven. The runtime repository now contains a corrected read-only callsite audit.
 
 No new XNU change is indicated. Do not broaden the syscall-295 or commpage patches for this LaunchServices result.
+
+
+## LaunchServices callsite result: unsupported-format policy gate
+
+The companion runtime repository's corrected LaunchServices callsite audit has now resolved the Lion `kLSNoRosettaEnvironmentErr (-10665)` launch decision.
+
+Snow Leopard's `_LSLaunch` path calls its explicit `_LSAppMeetsRosettaRequirement` helper. Lion's `_LSLaunch` no longer has that helper; instead it calls `_LSBundleDataGetUnsupportedFormatFlag` and returns `-10665` from the persisted unsupported-format classification.
+
+This confirms that the current PPC application-bundle rejection is a user-space LaunchServices registration/policy issue, not another missing XNU ABI.
+
+No XNU change is indicated. The runtime repository is now tracing the registration-time provenance of the unsupported-format flag before any LaunchServices compatibility patch is designed.
