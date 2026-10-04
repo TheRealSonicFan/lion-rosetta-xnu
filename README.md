@@ -145,3 +145,6 @@ The Carbon GUI preserved-core postmortem now shows that the translated guest exp
 
 
 The runtime Carbon milestone experiment now reaches `main()` on Lion and aborts specifically inside the first `GetCurrentProcess` call, while the exact Snow Leopard control completes successfully. The next test changes only LaunchServices application-registration context. No additional XNU change is currently indicated.
+
+
+The current PPC GUI application-bundle test is blocked before exec by Lion LaunchServices error `-10665` (`kLSNoRosettaEnvironmentErr`). The same bundle launches on Snow Leopard. This is a LaunchServices Rosetta-availability gate, not evidence for another kernel ABI change. Investigation continues read-only in the companion runtime repository.
