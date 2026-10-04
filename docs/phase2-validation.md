@@ -315,3 +315,13 @@ Snow Leopard's `_LSLaunch` path calls its explicit `_LSAppMeetsRosettaRequiremen
 This confirms that the current PPC application-bundle rejection is a user-space LaunchServices registration/policy issue, not another missing XNU ABI.
 
 No XNU change is indicated. The runtime repository is now tracing the registration-time provenance of the unsupported-format flag before any LaunchServices compatibility patch is designed.
+
+## LaunchServices provenance: removed PPC fallback
+
+The companion runtime repository has completed the unsupported-format provenance audit.
+
+Lion's _LSBundleDataGetUnsupportedFormatFlag computes its unsupported-format result dynamically from bundle architecture bits and current CPU policy. Snow Leopard contains an Intel-host fallback that accepts the PPC architecture bit for Rosetta; Lion's x86_64-host path removed that fallback and therefore classifies the validated PPC-only application as unsupported.
+
+This explains the later kLSNoRosettaEnvironmentErr launch rejection without identifying another kernel ABI problem.
+
+No XNU change is indicated. The next experiment uses only a private i386 LaunchServices copy in the runtime repository; the installed system framework and current syscall-295 kernel remain unchanged.
