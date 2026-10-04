@@ -151,3 +151,6 @@ The current PPC GUI application-bundle test is blocked before exec by Lion Launc
 
 
 The LaunchServices differential audit now shows that Lion classifies the same registered PPC application as `unsupported-format` and lacks Snow Leopard's explicit Rosetta/OAH LaunchServices logic. Rosetta receipts are also absent on Lion, but are not yet proven causal. This remains a user-space LaunchServices policy/implementation problem; no additional XNU change is indicated.
+
+
+The first-pass LaunchServices static audit confirms that the current `-10665` PPC application rejection is produced in user-space LaunchServices, with Snow Leopard and Lion using structurally different decision paths. A corrected callsite audit is pending in the companion runtime repository. No additional XNU change is indicated by this result.
