@@ -245,3 +245,16 @@ The same validated syscall-295 kernel was still running, the commpage and syscal
 The crash report places the x86 host PC at Rosetta's previously identified syscall-wrapper area `0xb815ac07`, but this is not evidence by itself of another missing XNU ABI. The current next step is read-only postmortem analysis of the preserved core using the runtime repository's `docs/carbon-gui-sigabrt-postmortem.md`.
 
 Do not make another XNU compatibility change until that postmortem identifies a concrete kernel boundary.
+
+
+## Carbon postmortem: guest-requested SIGABRT
+
+The preserved non-debugged core from the first PPC Carbon GUI failure has now been analyzed in the companion runtime repository.
+
+Runtime-decrypted Rosetta code shows that the direct caller supplies Unix syscall number `0x25` (decimal 37) to the host syscall wrapper. Both Snow Leopard and Lion define syscall 37 as `kill(pid, signum, posix)`.
+
+The preserved arguments are PID 1311, signal 6 (SIGABRT), and posix flag 1. The syscall returns success (`EAX=0`, carry clear) before the process terminates.
+
+Therefore this Carbon failure is not evidence of another missing Lion syscall ABI. Rosetta is faithfully delivering a guest-requested self-SIGABRT.
+
+No XNU change should be made from this result. The next experiment remains user-space localization with the runtime repository's milestone-instrumented Carbon probe.
