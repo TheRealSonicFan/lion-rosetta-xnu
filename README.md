@@ -139,3 +139,6 @@ Original scripts and documentation in this repository are under the MIT License.
 
 
 The current syscall-295 kernel has also passed the runtime project's normal PPC CoreFoundation command-line test. That result produced no new kernel boundary. The next controlled expansion is a Carbon GUI/window-event-loop test in the companion runtime repository; no additional XNU change is currently indicated.
+
+
+The Carbon GUI preserved-core postmortem now shows that the translated guest explicitly issues syscall 37 `kill(self, SIGABRT, 1)`, and Lion returns success. This is a guest-requested self-SIGABRT, not another missing kernel ABI. No additional XNU change is indicated; localization continues in the companion runtime repository.
