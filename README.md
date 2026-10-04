@@ -142,3 +142,6 @@ The current syscall-295 kernel has also passed the runtime project's normal PPC 
 
 
 The Carbon GUI preserved-core postmortem now shows that the translated guest explicitly issues syscall 37 `kill(self, SIGABRT, 1)`, and Lion returns success. This is a guest-requested self-SIGABRT, not another missing kernel ABI. No additional XNU change is indicated; localization continues in the companion runtime repository.
+
+
+The runtime Carbon milestone experiment now reaches `main()` on Lion and aborts specifically inside the first `GetCurrentProcess` call, while the exact Snow Leopard control completes successfully. The next test changes only LaunchServices application-registration context. No additional XNU change is currently indicated.
