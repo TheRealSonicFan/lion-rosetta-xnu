@@ -282,3 +282,14 @@ No milestone file or crash/core diagnostic is produced because the app never rea
 This does not indicate another XNU compatibility failure. The currently validated kernel continues to pass commpage, syscall-295, direct Rosetta, normal PPC exec, and CoreFoundation controls. No new XNU change should be made from the LaunchServices result.
 
 The next step is a read-only Snow Leopard/Lion LaunchServices Rosetta-environment audit in the companion runtime repository.
+
+
+## LaunchServices audit: user-space PPC policy difference
+
+The companion runtime repository's Snow Leopard/Lion LaunchServices environment audit confirms that the current PPC application-bundle failure remains above XNU.
+
+Both systems expose the same Rosetta translator identity, RosettaVersion.plist, and PowerPC architecture handler. However, Snow Leopard LaunchServices contains explicit Rosetta/OAH support logic and a ppc7400 slice, while Lion LaunchServices lacks that Rosetta-specific machinery and records the same PPC application with an additional `unsupported-format` flag.
+
+Snow Leopard also has Rosetta package receipts that are not installed on Lion, but the current evidence does not establish those receipts as the LaunchServices availability source.
+
+No XNU change is indicated. The next step is a read-only static analysis of the LaunchServices/CarbonCore/CoreServices PPC gate in the runtime repository.
