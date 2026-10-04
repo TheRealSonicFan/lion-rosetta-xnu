@@ -154,3 +154,6 @@ The LaunchServices differential audit now shows that Lion classifies the same re
 
 
 The first-pass LaunchServices static audit confirms that the current `-10665` PPC application rejection is produced in user-space LaunchServices, with Snow Leopard and Lion using structurally different decision paths. A corrected callsite audit is pending in the companion runtime repository. No additional XNU change is indicated by this result.
+
+
+The corrected LaunchServices callsite audit now ties Lion's `-10665` PPC application rejection directly to LaunchServices' persisted `unsupported-format` classification. Snow Leopard uses a separate Rosetta requirement checker instead. This remains a user-space registration/policy problem; no additional XNU change is indicated.
