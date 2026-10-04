@@ -148,3 +148,6 @@ The runtime Carbon milestone experiment now reaches `main()` on Lion and aborts 
 
 
 The current PPC GUI application-bundle test is blocked before exec by Lion LaunchServices error `-10665` (`kLSNoRosettaEnvironmentErr`). The same bundle launches on Snow Leopard. This is a LaunchServices Rosetta-availability gate, not evidence for another kernel ABI change. Investigation continues read-only in the companion runtime repository.
+
+
+The LaunchServices differential audit now shows that Lion classifies the same registered PPC application as `unsupported-format` and lacks Snow Leopard's explicit Rosetta/OAH LaunchServices logic. Rosetta receipts are also absent on Lion, but are not yet proven causal. This remains a user-space LaunchServices policy/implementation problem; no additional XNU change is indicated.
