@@ -293,3 +293,14 @@ Both systems expose the same Rosetta translator identity, RosettaVersion.plist, 
 Snow Leopard also has Rosetta package receipts that are not installed on Lion, but the current evidence does not establish those receipts as the LaunchServices availability source.
 
 No XNU change is indicated. The next step is a read-only static analysis of the LaunchServices/CarbonCore/CoreServices PPC gate in the runtime repository.
+
+
+## LaunchServices static PPC gate: no new XNU boundary
+
+The companion runtime repository's first-pass LaunchServices static audit confirms that the current `kLSNoRosettaEnvironmentErr (-10665)` failure remains a user-space LaunchServices decision.
+
+Snow Leopard's i386 LaunchServices error path calls its explicit Rosetta requirement checker immediately before deciding whether to return `-10665`. Lion's i386 LaunchServices still contains the `-10665` value, but reaches it through structurally different internal architecture logic and no longer exposes the Snow Leopard Rosetta-specific checker.
+
+The first static analyzer also had symbol-name/reporting limitations, so the exact Lion enclosing function/flag has not yet been proven. The runtime repository now contains a corrected read-only callsite audit.
+
+No new XNU change is indicated. Do not broaden the syscall-295 or commpage patches for this LaunchServices result.
