@@ -234,3 +234,14 @@ The exact Snow Leopard-positive-control executable loaded CoreFoundation and its
 The kernel, private dyld, Lion native dyld, and Rosetta cache hashes remained unchanged.
 
 No new XNU compatibility change is indicated by this result. The next work remains in user-space compatibility expansion: the companion runtime repository now contains the first controlled Carbon GUI/window-event-loop experiment.
+
+
+## Carbon GUI result: SIGABRT under postmortem analysis
+
+The first controlled PPC Carbon GUI experiment in the companion runtime repository passed on Snow Leopard but aborted on Lion before the probe printed either GUI marker.
+
+The same validated syscall-295 kernel was still running, the commpage and syscall-295 native preflights passed, and the guarded integrity hashes remained unchanged. Lion loaded the Carbon/ApplicationServices framework graph and then terminated with `EXC_CRASH (SIGABRT)`, status 134, generating `/cores/core.1311`.
+
+The crash report places the x86 host PC at Rosetta's previously identified syscall-wrapper area `0xb815ac07`, but this is not evidence by itself of another missing XNU ABI. The current next step is read-only postmortem analysis of the preserved core using the runtime repository's `docs/carbon-gui-sigabrt-postmortem.md`.
+
+Do not make another XNU compatibility change until that postmortem identifies a concrete kernel boundary.
