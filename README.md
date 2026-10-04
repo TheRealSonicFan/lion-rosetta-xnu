@@ -157,3 +157,5 @@ The first-pass LaunchServices static audit confirms that the current `-10665` PP
 
 
 The corrected LaunchServices callsite audit now ties Lion's `-10665` PPC application rejection directly to LaunchServices' persisted `unsupported-format` classification. Snow Leopard uses a separate Rosetta requirement checker instead. This remains a user-space registration/policy problem; no additional XNU change is indicated.
+
+The LaunchServices provenance audit now shows that Lion removed Snow Leopard's Intel-to-PPC fallback inside the user-space unsupported-format policy helper. The next controlled test patches only a private i386 LaunchServices copy; no additional XNU change is indicated.
