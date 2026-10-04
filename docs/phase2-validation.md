@@ -258,3 +258,14 @@ The preserved arguments are PID 1311, signal 6 (SIGABRT), and posix flag 1. The 
 Therefore this Carbon failure is not evidence of another missing Lion syscall ABI. Rosetta is faithfully delivering a guest-requested self-SIGABRT.
 
 No XNU change should be made from this result. The next experiment remains user-space localization with the runtime repository's milestone-instrumented Carbon probe.
+
+
+## Carbon milestone: GetCurrentProcess boundary
+
+The companion runtime repository's milestone-instrumented Carbon GUI probe has now localized the Lion guest-side abort to the first `GetCurrentProcess` call.
+
+The exact Snow Leopard control reaches every milestone through successful window/event-loop completion. On Lion, the same validated kernel/runtime stack reaches `main()` and `M01_BEFORE_GetCurrentProcess`, then the translated guest deliberately requests SIGABRT before `M02_AFTER_GetCurrentProcess`.
+
+This does not identify another missing XNU syscall ABI. The current next experiment changes only launch context by using a registered application bundle through LaunchServices.
+
+Do not make another XNU change from this result.
