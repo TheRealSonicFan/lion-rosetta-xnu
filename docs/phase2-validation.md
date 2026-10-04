@@ -269,3 +269,16 @@ The exact Snow Leopard control reaches every milestone through successful window
 This does not identify another missing XNU syscall ABI. The current next experiment changes only launch context by using a registered application bundle through LaunchServices.
 
 Do not make another XNU change from this result.
+
+
+## LaunchServices Rosetta availability gate
+
+The companion runtime repository's registered Carbon `.app` control exposed a user-space LaunchServices gate before PPC execution.
+
+The exact application bundle launches successfully through LaunchServices on Snow Leopard. On Lion, `lsregister -f` succeeds but `open -n -W` returns LaunchServices error `-10665` before the PPC executable starts. That result code is `kLSNoRosettaEnvironmentErr`.
+
+No milestone file or crash/core diagnostic is produced because the app never reaches `main()`.
+
+This does not indicate another XNU compatibility failure. The currently validated kernel continues to pass commpage, syscall-295, direct Rosetta, normal PPC exec, and CoreFoundation controls. No new XNU change should be made from the LaunchServices result.
+
+The next step is a read-only Snow Leopard/Lion LaunchServices Rosetta-environment audit in the companion runtime repository.
