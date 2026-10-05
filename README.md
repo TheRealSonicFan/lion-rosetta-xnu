@@ -170,3 +170,6 @@ The runtime Process Manager process-dispatch audit has now passed on Snow Leopar
 
 
 The runtime system-service transport audit has now identified a material Security-layer divergence rather than a new kernel boundary: Snow Leopard PPC `SessionGetInfo` uses the legacy SecurityServer client path, while Lion i386 uses local audit-session state. The next runtime step is a guarded PPC command-line pre-dispatch preflight of CoreServices service acquisition and `SessionGetInfo`; no additional XNU change is indicated.
+
+
+The latest runtime pre-dispatch PPC probe returns a zero `LaunchApplicationServices` service port on Lion while the exact Snow Leopard control succeeds. The call returns normally and never reaches `SessionGetInfo`; syscall 295 remains healthy. The next runtime stage is a read-only CarbonCore `SCSession::findOrCreateService` / `SCClientSession` audit. No additional XNU change is indicated.
