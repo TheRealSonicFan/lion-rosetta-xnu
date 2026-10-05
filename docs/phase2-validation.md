@@ -389,3 +389,14 @@ This is a tooling/reporting defect, not a new kernel boundary and not evidence t
 The runtime repository now contains analyzer version 2, which validates nonzero code-window selection, adds x86_64 LaunchServices coverage for the native coreservicesd side, records Rosetta-cache membership for LaunchServices, and emits `RESULT: PASS` only when the intended static evidence was collected.
 
 No XNU change is indicated. The next action remains a read-only runtime audit rerun; no PPC application is launched and no no-ASN behavior override should be tested yet.
+
+
+## Corrected RegisterApplication audit: user-space protocol boundary
+
+The companion runtime repository's corrected version-2 RegisterApplication/ASN callsite audit now passes on both Snow Leopard and Lion.
+
+Snow Leopard PPC HIServices `__RegisterApplication` performs LaunchServices application check-in, ASN/PSN fallback and extraction, WindowServer/CPS registration, and then a fatal no-ASN check if the cached PSN remains unusable. The same static review also exposes an earlier independent LaunchServices abort when the CoreApplicationServices process-dispatch channel cannot be established.
+
+The LaunchServices registration message family persists across Snow Leopard and Lion, but the corrected disassembly shows request/reply-layout and validator differences between the Snow Leopard PPC client and Lion native server-side paths. That is a concrete user-space compatibility question, not evidence for another missing kernel ABI.
+
+No XNU change is indicated. The runtime repository now performs a read-only registration-protocol audit to identify the active native service architecture, map the exact no-ASN environment cstring, and compare the Snow Leopard PPC request against Snow Leopard/Lion server validation before any abort bypass or protocol adapter is attempted.
