@@ -161,3 +161,6 @@ The corrected LaunchServices callsite audit now ties Lion's `-10665` PPC applica
 The LaunchServices provenance audit now shows that Lion removed Snow Leopard's Intel-to-PPC fallback inside the user-space unsupported-format policy helper. The next controlled test patches only a private i386 LaunchServices copy; no additional XNU change is indicated.
 
 The private LaunchServices compatibility experiment has now cleared Lion's PPC application admission gate without modifying the system framework. The launched PPC app then reproduces the independent `GetCurrentProcess` self-SIGABRT boundary. Investigation has moved back to user-space Process Manager compatibility; no additional XNU change is indicated.
+
+
+The latest runtime localization shows that pseudo-PSN `GetProcessPID` self-SIGABRTs under Lion Rosetta before returning, matching the earlier `GetCurrentProcess` abort family. `GetProcessForPID` was not reached, so the next test remains user-space Process Manager localization. No new XNU change is indicated.
