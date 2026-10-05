@@ -439,3 +439,16 @@ Both systems also expose an active `coreservicesd` and the same `com.apple.CoreS
 The remaining unresolved static layer is below LaunchServices: CarbonCore's `scCreateSystemServiceVersion` / reconnect transport and Security's `SessionGetInfo` implementation. The runtime repository now performs a read-only differential audit of those functions before any live instrumentation or compatibility code.
 
 No additional XNU change is indicated.
+
+
+## System-service transport audit: next boundary remains user space
+
+The companion runtime repository has completed the Snow Leopard/Lion CarbonCore/Security transport audit.
+
+CarbonCore's top-level `scCreateSystemServiceVersion` path remains semantically similar across Snow Leopard PPC and Lion i386 and still reaches `SCSession::findOrCreateService`. The material difference is in Security session lookup: Snow Leopard PPC `SessionGetInfo` uses the legacy SecurityServer client path, while Lion i386 uses `CommonCriteria::AuditInfo` and reads audit-session state locally.
+
+Because translated PPC on Lion executes the restored Snow Leopard PPC Security image from the validated Rosetta shared cache, the legacy Security client path is being exercised in a Lion host environment.
+
+The runtime repository now performs one guarded command-line PPC pre-dispatch preflight that tests only the two prerequisites before LaunchServices process-services initialization: `scCreateSystemServiceVersion("LaunchApplicationServices", 0x00010000, NULL)` followed by `SessionGetInfo(callerSecuritySession,...)`.
+
+No additional XNU change is indicated.
