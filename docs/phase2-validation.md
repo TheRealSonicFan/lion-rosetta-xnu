@@ -452,3 +452,16 @@ Because translated PPC on Lion executes the restored Snow Leopard PPC Security i
 The runtime repository now performs one guarded command-line PPC pre-dispatch preflight that tests only the two prerequisites before LaunchServices process-services initialization: `scCreateSystemServiceVersion("LaunchApplicationServices", 0x00010000, NULL)` followed by `SessionGetInfo(callerSecuritySession,...)`.
 
 No additional XNU change is indicated.
+
+
+## Pre-dispatch probe: null CoreServices service port on Lion
+
+The companion runtime repository has completed the guarded PPC pre-dispatch primitive test.
+
+The exact PPC executable succeeds on Snow Leopard, returning a nonzero `LaunchApplicationServices` service port and a valid Security session. On Lion, the same executable reaches `scCreateSystemServiceVersion("LaunchApplicationServices", 0x00010000, NULL)`; the call returns normally but supplies a zero port. `SessionGetInfo` is never reached.
+
+The native syscall-295 safety probe still passes, no new crash/core is generated, and the protected kernel/runtime identities remain unchanged.
+
+The immediate failure boundary is therefore CarbonCore/CoreServices system-service acquisition, not another kernel ABI and not the Security session call itself. The runtime repository is proceeding with a read-only `SCSession::findOrCreateService` / `SCClientSession` differential audit before any further live instrumentation.
+
+No additional XNU change is indicated.
