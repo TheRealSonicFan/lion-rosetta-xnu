@@ -164,3 +164,6 @@ The private LaunchServices compatibility experiment has now cleared Lion's PPC a
 
 
 The corrected runtime RegisterApplication/ASN callsite audit, registration-protocol audit, and guarded no-ASN discriminator are now complete. The exact PPC process sees `LSDONOTABORTIFNOASN=0`, yet Lion still self-SIGABRTs before `GetProcessForPID` returns while Snow Leopard returns a nonzero PSN. The later HIServices no-ASN abort is therefore not the observed fatal branch. The companion runtime repository has moved to a read-only LaunchServices process-dispatch/InitializeProcessesServices audit. Investigation remains in user space; no new XNU change is indicated.
+
+
+The runtime Process Manager process-dispatch audit has now passed on Snow Leopard and Lion. The Snow Leopard PPC and Lion i386 InitializeProcessesServices clients retain the same message ID and 32-bit request/reply sizing, the high-level LaunchServices setup paths are structurally aligned, and both systems advertise the same coreservicesd launchd Mach service. No new kernel boundary or obvious LaunchServices wire mismatch was identified. The companion runtime repository is proceeding with a read-only CarbonCore system-service/Security-session transport audit; no additional XNU change is indicated.
