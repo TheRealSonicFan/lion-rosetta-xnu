@@ -478,3 +478,16 @@ The remaining runtime boundary is still the zero `LaunchApplicationServices` por
 The runtime repository therefore performs one final read-only RPC-contract audit covering the actual `ServerCheckin` and `FindService` stubs, check-in naming, Lion connection-state logic, message sizes/IDs, and output/status handling.
 
 No additional XNU change is indicated.
+
+
+## CoreServices RPC audit: no static wire mismatch established
+
+The companion runtime repository has completed the CarbonCore system-service RPC protocol audit.
+
+Snow Leopard PPC uses an older complex `ServerCheckin` request, but Lion's server wrapper explicitly retains handling for that legacy descriptor-bearing form. The `FindService` request/reply IDs and message sizes align directly between Snow Leopard PPC and Lion native CarbonCore.
+
+The remaining zero-port boundary is therefore runtime state rather than a demonstrated wire-format mismatch: either the translated PPC CarbonCore fails to establish a usable coreservicesd client/check-in session, or check-in succeeds and the subsequent `LaunchApplicationServices` service lookup fails.
+
+The runtime repository is proceeding with one guarded post-call state discriminator using the guest CarbonCore's existing exported check-in/status helpers. No direct RPC injection, framework patch, or kernel change is involved.
+
+No additional XNU change is indicated.
