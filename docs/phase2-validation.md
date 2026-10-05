@@ -465,3 +465,16 @@ The native syscall-295 safety probe still passes, no new crash/core is generated
 The immediate failure boundary is therefore CarbonCore/CoreServices system-service acquisition, not another kernel ABI and not the Security session call itself. The runtime repository is proceeding with a read-only `SCSession::findOrCreateService` / `SCClientSession` differential audit before any further live instrumentation.
 
 No additional XNU change is indicated.
+
+
+## CarbonCore client-internals audit: RPC contract is the remaining static gap
+
+The companion runtime repository has completed the CarbonCore system-service client-internals audit.
+
+Snow Leopard PPC and Lion i386 retain the same broad client architecture: CoreServices client check-in uses a bootstrap lookup followed by `ServerCheckin`, and service acquisition reaches `SCSession::findOrCreateService` and the client `FindService` RPC. Private `SCClientSession` object sizes/offsets differ between releases, but those framework-local layout changes do not establish an IPC incompatibility.
+
+The remaining runtime boundary is still the zero `LaunchApplicationServices` port. Static analysis must now distinguish client check-in/session establishment from the subsequent `FindService` transaction.
+
+The runtime repository therefore performs one final read-only RPC-contract audit covering the actual `ServerCheckin` and `FindService` stubs, check-in naming, Lion connection-state logic, message sizes/IDs, and output/status handling.
+
+No additional XNU change is indicated.
