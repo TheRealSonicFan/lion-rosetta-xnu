@@ -426,3 +426,16 @@ The latest Lion crash again matches Rosetta's already decoded guest-requested se
 This rules out the later HIServices no-ASN abort controlled by `LSDONOTABORTIFNOASN` as the observed fatal branch. The remaining investigation is user-space LaunchServices process-services initialization, where `getProcessDispatchTable()` can abort if `SetupCoreApplicationServicesCommunicationPort()` fails to establish a usable dispatch table.
 
 No additional XNU change is indicated. The runtime repository now performs a read-only Snow Leopard/Lion process-dispatch audit covering session lookup, service/version negotiation, `_LSDoInitializeProcessesServices`, the InitializeProcessesServices server-wrapper family, port creation, and dispatch-table installation before any compatibility layer is designed.
+
+
+## Process-dispatch audit: no LaunchServices wire mismatch identified
+
+The companion runtime repository has completed the Snow Leopard/Lion Process Manager process-dispatch audit.
+
+The Snow Leopard PPC and Lion i386 LaunchServices clients use the same InitializeProcessesServices message ID `0x4650`, request size `0x2c`, receive size `0x50`, and expected reply ID `0x46b4`. Their high-level setup paths both perform security-session discovery, acquire the `LaunchApplicationServices` system service at version `0x00010000`, invoke `_LSDoInitializeProcessesServices`, validate returned process-services state, create a CoreFoundation Mach port, and install the Process Manager dispatch table.
+
+Both systems also expose an active `coreservicesd` and the same `com.apple.CoreServices.coreservicesd` launchd Mach-service declaration. The static review did not reveal an obvious LaunchServices-level 32-bit wire-ABI incompatibility.
+
+The remaining unresolved static layer is below LaunchServices: CarbonCore's `scCreateSystemServiceVersion` / reconnect transport and Security's `SessionGetInfo` implementation. The runtime repository now performs a read-only differential audit of those functions before any live instrumentation or compatibility code.
+
+No additional XNU change is indicated.
