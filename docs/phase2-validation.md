@@ -363,3 +363,16 @@ The crash again uses Rosetta's already decoded guest-requested abort wrapper: th
 Together with the earlier `GetCurrentProcess` and pseudo-PSN `GetProcessPID` results, this points to a shared user-space translated-PPC Process Manager registration/backend requirement rather than another missing kernel syscall ABI.
 
 No additional XNU change is indicated. The authoritative next step is the runtime repository's read-only `docs/process-manager-hiservices-audit.md`, including Rosetta-cache/on-disk image provenance before any HIServices compatibility design.
+
+
+## Process Manager HIServices audit: shared RegisterApplication path
+
+The companion runtime repository's first Process Manager/HIServices differential audit is complete.
+
+Both Snow Leopard and Lion contain the exact validated Rosetta cache/map, and the relevant HIServices/ApplicationServices/CarbonCore/AE paths are present in that cache. The Rosetta ApplicationServices shim and `Interposers.dylib` also match byte-for-byte in their i386 and ppc7400 slices.
+
+Snow Leopard's PPC HIServices implementation shows that `GetCurrentProcess`, `GetProcessPID`, and `GetProcessForPID` all perform the same lazy `__RegisterApplication` initialization before their normal identity lookup work. HIServices contains explicit diagnostics for failure to obtain an application ASN from CoreServices/coreservicesd and exposes the `LSDoNotAbortIfNoASN`/`LSDONOTABORTIFNOASN` names.
+
+Both systems have `coreservicesd`, WindowServer, and the `com.apple.pbs` launchd job, so the result does not point to a missing daemon or another XNU ABI.
+
+No additional XNU change is indicated. The runtime repository now performs a narrower read-only `__RegisterApplication`/ASN callsite audit before testing any no-abort behavior or designing a user-space compatibility layer.
