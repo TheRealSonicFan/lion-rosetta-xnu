@@ -337,3 +337,16 @@ The launched PPC application then reached `main()` and reproduced the previously
 Therefore the current unresolved GUI problem is no longer LaunchServices admission and does not expose another XNU ABI failure. The next runtime experiment tests alternate Process Manager PSN/PID APIs while leaving the validated kernel unchanged.
 
 No additional XNU change is indicated by this result.
+
+
+## Process Manager pseudo-PSN result
+
+The companion runtime repository's alternate Process Manager experiment passed fully on Snow Leopard but failed on Lion inside its first guest Process Manager operation, `GetProcessPID({0,kCurrentProcess},...)`.
+
+The Lion subject reached `main()` and its pre-call marker, then self-SIGABRTed before the function returned. The crash registers again match the already decoded Rosetta guest abort wrapper: PID 5106, signal 6, posix flag 1, host return EAX 0.
+
+This is the same abort family previously observed for `GetCurrentProcess`. It does not expose a new XNU syscall failure.
+
+Because `GetProcessForPID` was not reached, investigation remains in the runtime layer. The next experiment begins with `GetProcessForPID(getpid(), &psn)` and avoids both current-process lookup APIs.
+
+No additional XNU change is indicated.
