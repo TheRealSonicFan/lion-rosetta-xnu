@@ -173,3 +173,6 @@ The runtime system-service transport audit has now identified a material Securit
 
 
 The latest runtime pre-dispatch PPC probe returns a zero `LaunchApplicationServices` service port on Lion while the exact Snow Leopard control succeeds. The call returns normally and never reaches `SessionGetInfo`; syscall 295 remains healthy. The next runtime stage is a read-only CarbonCore `SCSession::findOrCreateService` / `SCClientSession` audit. No additional XNU change is indicated.
+
+
+The runtime CarbonCore client-internals audit has narrowed the zero CoreServices service port to either client check-in/session establishment or the subsequent `FindService` transaction. The next runtime stage is a read-only comparison of the actual `ServerCheckin` and `FindService` RPC contracts. No additional XNU change is indicated.
