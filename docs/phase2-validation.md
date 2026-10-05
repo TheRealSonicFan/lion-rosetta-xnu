@@ -350,3 +350,16 @@ This is the same abort family previously observed for `GetCurrentProcess`. It do
 Because `GetProcessForPID` was not reached, investigation remains in the runtime layer. The next experiment begins with `GetProcessForPID(getpid(), &psn)` and avoids both current-process lookup APIs.
 
 No additional XNU change is indicated.
+
+
+## Process Manager GetProcessForPID result: no new XNU boundary
+
+The companion runtime repository's GetProcessForPID-first experiment has now closed the remaining Process Manager API-permutation question.
+
+The exact PPC/ppc7400 subject passes on Snow Leopard 10.6.8: `GetProcessForPID(getpid(), &psn)` returns successfully and the probe completes foreground conversion, window creation, and its event loop. On Lion 10.7.5, the same subject reaches `M01_BEFORE_GetProcessForPID` and self-SIGABRTs before the function returns.
+
+The crash again uses Rosetta's already decoded guest-requested abort wrapper: the subject PID is supplied with signal 6 and the posix flag, while the host syscall returns success. The native syscall-295 probe still reaches the compatibility front-end and returns EBADF, and the guarded runtime hashes remain unchanged.
+
+Together with the earlier `GetCurrentProcess` and pseudo-PSN `GetProcessPID` results, this points to a shared user-space translated-PPC Process Manager registration/backend requirement rather than another missing kernel syscall ABI.
+
+No additional XNU change is indicated. The authoritative next step is the runtime repository's read-only `docs/process-manager-hiservices-audit.md`, including Rosetta-cache/on-disk image provenance before any HIServices compatibility design.
