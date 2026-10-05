@@ -325,3 +325,15 @@ Lion's _LSBundleDataGetUnsupportedFormatFlag computes its unsupported-format res
 This explains the later kLSNoRosettaEnvironmentErr launch rejection without identifying another kernel ABI problem.
 
 No XNU change is indicated. The next experiment uses only a private i386 LaunchServices copy in the runtime repository; the installed system framework and current syscall-295 kernel remain unchanged.
+
+## Private LaunchServices compatibility result: launch gate cleared
+
+The companion runtime repository's private, process-local LaunchServices compatibility experiment has now cleared Lion's user-space PPC application launch gate.
+
+A verified one-byte change was applied only to a private i386 LaunchServices copy. The installed system LaunchServices hash remained unchanged. An i386 `open` preflight proved that the private framework was loaded, after which the registered PPC application launched successfully through LaunchServices instead of returning `kLSNoRosettaEnvironmentErr (-10665)`.
+
+The launched PPC application then reached `main()` and reproduced the previously independent Carbon Process Manager boundary: it self-SIGABRTed inside `GetCurrentProcess`.
+
+Therefore the current unresolved GUI problem is no longer LaunchServices admission and does not expose another XNU ABI failure. The next runtime experiment tests alternate Process Manager PSN/PID APIs while leaving the validated kernel unchanged.
+
+No additional XNU change is indicated by this result.
