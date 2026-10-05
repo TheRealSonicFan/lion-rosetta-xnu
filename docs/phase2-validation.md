@@ -376,3 +376,16 @@ Snow Leopard's PPC HIServices implementation shows that `GetCurrentProcess`, `Ge
 Both systems have `coreservicesd`, WindowServer, and the `com.apple.pbs` launchd job, so the result does not point to a missing daemon or another XNU ABI.
 
 No additional XNU change is indicated. The runtime repository now performs a narrower read-only `__RegisterApplication`/ASN callsite audit before testing any no-abort behavior or designing a user-space compatibility layer.
+
+
+## RegisterApplication callsite audit: analyzer rerun required
+
+The companion runtime repository's first `__RegisterApplication`/ASN callsite execution did not complete its intended disassembly step.
+
+Both Snow Leopard and Lion reports successfully inventoried the relevant symbols, including `__RegisterApplication` and Process Manager/LaunchServices registration functions, but every analyzed slice ended with `selected_symbol_windows=0`. Review of the runtime analyzer identified an over-escaped symbol/instruction address parser in version 1.
+
+This is a tooling/reporting defect, not a new kernel boundary and not evidence that the target code is absent.
+
+The runtime repository now contains analyzer version 2, which validates nonzero code-window selection, adds x86_64 LaunchServices coverage for the native coreservicesd side, records Rosetta-cache membership for LaunchServices, and emits `RESULT: PASS` only when the intended static evidence was collected.
+
+No XNU change is indicated. The next action remains a read-only runtime audit rerun; no PPC application is launched and no no-ASN behavior override should be tested yet.
