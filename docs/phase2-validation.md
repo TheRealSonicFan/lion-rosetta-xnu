@@ -413,3 +413,16 @@ The same audit shows that Snow Leopard PPC and Lion i386 `_LSDoRegisterApplicati
 An earlier LaunchServices `getProcessDispatchTable()` abort remains independently possible if the CoreApplicationServices process-dispatch channel cannot be established.
 
 No XNU change is indicated. The next runtime step is a single process-local discriminator: the test bundle supplies `LSDONOTABORTIFNOASN=0`, calls `GetProcessForPID` once, logs status/PSN, and exits immediately. If the call still aborts, investigation moves to the earlier user-space dispatch channel; if it returns, the returned registration state becomes the next user-space boundary.
+
+
+## No-ASN discriminator: failure is upstream of the HIServices no-ASN gate
+
+The companion runtime repository has completed the guarded process-local no-ASN discriminator.
+
+The exact PPC subject sees `LSDONOTABORTIFNOASN=0` on Snow Leopard and Lion. Snow Leopard returns successfully from `GetProcessForPID` with a nonzero PSN. Lion reaches the pre-call milestone and still self-SIGABRTs before `GetProcessForPID` returns.
+
+The latest Lion crash again matches Rosetta's already decoded guest-requested self-abort wrapper, and the native syscall-295 preflight still reaches the compatibility front-end and returns EBADF. Protected kernel/runtime hashes remain unchanged.
+
+This rules out the later HIServices no-ASN abort controlled by `LSDONOTABORTIFNOASN` as the observed fatal branch. The remaining investigation is user-space LaunchServices process-services initialization, where `getProcessDispatchTable()` can abort if `SetupCoreApplicationServicesCommunicationPort()` fails to establish a usable dispatch table.
+
+No additional XNU change is indicated. The runtime repository now performs a read-only Snow Leopard/Lion process-dispatch audit covering session lookup, service/version negotiation, `_LSDoInitializeProcessesServices`, the InitializeProcessesServices server-wrapper family, port creation, and dispatch-table installation before any compatibility layer is designed.
