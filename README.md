@@ -167,3 +167,6 @@ The corrected runtime RegisterApplication/ASN callsite audit, registration-proto
 
 
 The runtime Process Manager process-dispatch audit has now passed on Snow Leopard and Lion. The Snow Leopard PPC and Lion i386 InitializeProcessesServices clients retain the same message ID and 32-bit request/reply sizing, the high-level LaunchServices setup paths are structurally aligned, and both systems advertise the same coreservicesd launchd Mach service. No new kernel boundary or obvious LaunchServices wire mismatch was identified. The companion runtime repository is proceeding with a read-only CarbonCore system-service/Security-session transport audit; no additional XNU change is indicated.
+
+
+The runtime system-service transport audit has now identified a material Security-layer divergence rather than a new kernel boundary: Snow Leopard PPC `SessionGetInfo` uses the legacy SecurityServer client path, while Lion i386 uses local audit-session state. The next runtime step is a guarded PPC command-line pre-dispatch preflight of CoreServices service acquisition and `SessionGetInfo`; no additional XNU change is indicated.
