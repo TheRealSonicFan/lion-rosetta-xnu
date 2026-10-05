@@ -400,3 +400,16 @@ Snow Leopard PPC HIServices `__RegisterApplication` performs LaunchServices appl
 The LaunchServices registration message family persists across Snow Leopard and Lion, but the corrected disassembly shows request/reply-layout and validator differences between the Snow Leopard PPC client and Lion native server-side paths. That is a concrete user-space compatibility question, not evidence for another missing kernel ABI.
 
 No XNU change is indicated. The runtime repository now performs a read-only registration-protocol audit to identify the active native service architecture, map the exact no-ASN environment cstring, and compare the Snow Leopard PPC request against Snow Leopard/Lion server validation before any abort bypass or protocol adapter is attempted.
+
+
+## Registration-protocol audit: exact no-ASN discriminator
+
+The companion runtime repository has completed the LaunchServices registration-protocol audit on Snow Leopard and Lion.
+
+The audit maps the Snow Leopard PPC HIServices abort-control `getenv()` operand to the exact uppercase literal `LSDONOTABORTIFNOASN`. The local control byte defaults to 1 and is replaced by `atoi()` of the environment value, so `LSDONOTABORTIFNOASN=0` suppresses only the later no-ASN abort branch.
+
+The same audit shows that Snow Leopard PPC and Lion i386 `_LSDoRegisterApplication` use registration message ID `0x4652` with the same `0x44` send and `0x48` receive sizes. The x86_64 layout is wider, but the current evidence does not establish that a protocol adapter or daemon replacement is required.
+
+An earlier LaunchServices `getProcessDispatchTable()` abort remains independently possible if the CoreApplicationServices process-dispatch channel cannot be established.
+
+No XNU change is indicated. The next runtime step is a single process-local discriminator: the test bundle supplies `LSDONOTABORTIFNOASN=0`, calls `GetProcessForPID` once, logs status/PSN, and exits immediately. If the call still aborts, investigation moves to the earlier user-space dispatch channel; if it returns, the returned registration state becomes the next user-space boundary.
