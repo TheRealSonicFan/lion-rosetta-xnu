@@ -185,3 +185,6 @@ The latest runtime stage discriminator shows that the translated PPC CarbonCore 
 
 
 The latest runtime bootstrap discriminator localizes the current failure entirely to user-space launchd/bootstrap IPC: the Snow Leopard PPC client succeeds on Snow Leopard but receives `MIG_BAD_ARGUMENTS` from Lion for the same coreservicesd lookup. Apple OSS source shows Lion added an instance UUID field to the underlying `vproc_mig_look_up2` request while retaining the public `bootstrap_look_up2` API. The next runtime stage is read-only binary confirmation of that request-layout change. The syscall-295 path remains healthy and no additional XNU change is indicated.
+
+
+The corrected runtime bootstrap protocol audit confirms the active defect is a user-space MIG request-layout mismatch: Snow Leopard PPC sends a `0xac` `look_up2` request, while Lion's generated client/server contract contains an extra 16-byte instance UUID and uses `0xbc`. The next runtime stage is one guarded process-local Lion-format lookup transaction, stopping before CoreServices `ServerCheckin`. No additional XNU change is indicated.
