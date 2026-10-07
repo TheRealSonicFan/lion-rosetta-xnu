@@ -536,3 +536,16 @@ That exact `0x10` expansion matches Lion's `instanceid : uuid_t` addition and ex
 The runtime repository is proceeding with one process-local proof transaction that constructs the Lion-format request and stops before CoreServices `ServerCheckin`.
 
 The syscall-295/XNU boundary remains closed. No additional XNU change is indicated.
+
+
+## Bootstrap protocol adapter proof: corrected PPC lookup succeeds
+
+The companion runtime repository has completed the guarded one-transaction bootstrap protocol adapter experiment.
+
+The translated PPC subject constructed the Lion-format `look_up2` request with the binary-confirmed 16-byte instance UUID field and `0xbc` send size. Lion accepted the request, returned the expected complex reply, and supplied a nonzero coreservicesd service port. No crash occurred, protected identities remained unchanged, and the syscall-295 safety probe remained a clean EBADF/no-SIGSYS PASS.
+
+This experimentally closes the launchd/bootstrap request-layout defect itself.
+
+The runtime repository is now proceeding with a process-local integration discriminator: a private PPC dyld interposer adapts only CarbonCore's exact coreservicesd bootstrap lookup and then lets unmodified PPC CarbonCore continue into its existing `ServerCheckin -> FindService` path.
+
+No direct CoreServices RPC is issued by the custom test code, no system binary is patched, and no additional XNU change is indicated.
