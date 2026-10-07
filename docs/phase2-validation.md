@@ -506,3 +506,18 @@ This localizes the active failure before `FindService`: the guest PPC CarbonCore
 The runtime repository is therefore testing only the first half of the remaining `bootstrap_look_up2 -> ServerCheckin` boundary. The next one-shot PPC probe performs the exact coreservicesd bootstrap lookup with the recovered target PID and 64-bit flags value, and deliberately does not call `ServerCheckin` in the same run.
 
 No additional XNU change is indicated.
+
+
+## Bootstrap lookup discriminator: Lion returns MIG_BAD_ARGUMENTS
+
+The companion runtime repository has completed the guarded coreservicesd bootstrap-lookup discriminator.
+
+The exact PPC subject succeeds on Snow Leopard with a nonzero bootstrap port, `kr=0`, and a nonzero `com.apple.CoreServices.coreservicesd` service port. On Lion, the same subject has a nonzero bootstrap port and the same clean environment/name/target/flags, but `bootstrap_look_up2` returns `-304` (`0xfffffed0`) and service port zero, with no crash or protected-file change.
+
+Darwin MIG defines `-304` as `MIG_BAD_ARGUMENTS`.
+
+Public Apple launchd source for the exact baselines shows a matching user-space protocol evolution: launchd-329.3.3 `vproc_mig_look_up2` places 64-bit flags immediately after target PID, whereas launchd-392.39 inserts an `instanceid : uuid_t` field before those flags. Lion's public `bootstrap_look_up2` API remains source-compatible by routing through `bootstrap_look_up3`.
+
+The runtime repository is now performing a read-only shipped-binary audit of liblaunch/libSystem and launchd to confirm the exact request layouts before any process-local protocol adapter is attempted.
+
+The syscall-295 safety probe remains healthy. No additional XNU change is indicated.
