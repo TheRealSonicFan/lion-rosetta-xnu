@@ -617,6 +617,10 @@ The follow-on Security-only discriminator localized the live Lion failure at `bo
 
 The companion runtime repository has now completed the standalone SecurityServer bootstrap proof. Snow Leopard's ordinary lookup returned a nonzero service port. On Lion, the translated PPC subject sent the binary-confirmed UUID-expanded `0xbc` lookup request (request ID `0x194`, target PID 0, zero instance UUID, flags 0) for `com.apple.SecurityServer`; Lion returned Mach success and the expected complex `0x28` reply with one descriptor and a nonzero service port.
 
-This closes the Security first-use bootstrap failure as the same user-space launchd request-layout mismatch already proven for the earlier coreservicesd path. The runtime repository is now proceeding with a process-local Security-only integration test that adapts only this bootstrap lookup and passively records the untouched Security ucsp requests that follow.
+This closes the Security first-use bootstrap failure as the same user-space launchd request-layout mismatch already proven for the earlier coreservicesd path.
+
+The follow-on Security-only integration has now advanced through that corrected bootstrap lookup. Lion accepts `verifyPrivileged2 (0x441)` and `setup (0x3e8)`, then the untouched Snow Leopard PPC client sends `getSessionInfo (0x428)`. Mach transport succeeds but Lion returns a simple `0x24` MIG error reply. The PPC-visible raw error word `0xd1feffff` is byte-swapped by the shipped generated stub according to the reply NDR integer representation, yielding `0xfffffed1` = signed `-303` / `MIG_BAD_ID`. The retired legacy session RPC is therefore directly proven absent.
+
+Lion's native `SessionGetInfo(callerSecuritySession,...)` instead uses the kernel-backed AuditInfo path through `getaudit_addr(..., 0x30)`. The runtime repository is now proceeding with a narrow AuditInfo oracle that validates the native field mapping and checks whether translated PPC can call `getaudit_addr` directly before any API compatibility shim is designed.
 
 This remains entirely a user-space compatibility boundary; no additional XNU change is indicated.
