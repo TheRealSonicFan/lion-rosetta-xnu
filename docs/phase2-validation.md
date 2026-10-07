@@ -624,3 +624,14 @@ The follow-on Security-only integration has now advanced through that corrected 
 Lion's native `SessionGetInfo(callerSecuritySession,...)` instead uses the kernel-backed AuditInfo path through `getaudit_addr(..., 0x30)`. The runtime repository is now proceeding with a narrow AuditInfo oracle that validates the native field mapping and checks whether translated PPC can call `getaudit_addr` directly before any API compatibility shim is designed.
 
 This remains entirely a user-space compatibility boundary; no additional XNU change is indicated.
+
+
+## Security AuditInfo oracle: translated PPC can read Lion audit-session state
+
+The companion runtime repository has completed the corrected Security AuditInfo oracle.
+
+On Lion, native i386 `SessionGetInfo(callerSecuritySession,...)` returned status 0 and its session ID/attribute outputs exactly matched the typed 0x30-byte `auditinfo_addr` returned by `getaudit_addr`. The translated PPC subject also called `getaudit_addr` successfully and returned the same audit session ID. The first raw 32-bit word of the 64-bit `ai_flags` field differs across i386 and PPC because of endianness, so the next runtime experiment uses the typed 64-bit field rather than a hard-coded word.
+
+The runtime repository is now proceeding with a one-tuple process-local `SessionGetInfo(callerSecuritySession,...)` adapter that reads `auditinfo_addr_t.ai_asid` and `ai_flags` directly and bypasses the retired SecurityServer `getSessionInfo=0x428` RPC entirely.
+
+The validated syscall-295 gate remains a clean EBADF/no-SIGSYS PASS, protected identities were unchanged, and no new diagnostic was produced. This remains a user-space compatibility boundary; no additional XNU change is indicated.
