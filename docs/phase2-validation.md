@@ -599,3 +599,16 @@ This closes the CarbonCore system-service transport boundary and establishes tha
 The runtime repository is now proceeding with a pre-dispatch compatibility discriminator that keeps the proven CoreServices adapter active and calls the untouched Snow Leopard PPC `SessionGetInfo(callerSecuritySession,...)` path. That is the next unresolved primitive before LaunchServices `_LSDoInitializeProcessesServices`.
 
 No additional XNU change is indicated.
+
+
+## Pre-dispatch Security boundary: SessionGetInfo returns status 1
+
+The companion runtime repository has completed the pre-dispatch compatibility discriminator under the proven v3 CoreServices adapter.
+
+On Lion, translated PPC CarbonCore again completes its adapted bootstrap lookup and ServerCheckin sequence and returns a nonzero `LaunchApplicationServices` service port. The next untouched Snow Leopard PPC call, `SessionGetInfo(callerSecuritySession,...)`, returns normally with status `1`, session ID zero, and attributes zero. The exact Snow Leopard control returns status 0 with a nonzero session ID and nonzero attributes.
+
+No crash/core diagnostic was produced. Protected runtime and kernel identities remained unchanged. The native syscall-295 probe remains a clean EBADF/no-SIGSYS PASS.
+
+The active compatibility boundary is therefore user-space Security/session behavior, not XNU or CarbonCore. Historical Security source indicates that the legacy securityd session-information RPC was retired in favor of a kernel-backed native path, but the exact underlying Mach/MIG return from the translated client has not yet been proven.
+
+The runtime repository is proceeding with a read-only Security/securityd shipped-binary protocol audit. No additional XNU change is indicated.
