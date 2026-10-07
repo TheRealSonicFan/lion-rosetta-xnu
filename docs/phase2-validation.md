@@ -579,3 +579,23 @@ This independently closes the second user-space protocol defect at the standalon
 The runtime repository is now proceeding with a single process-local integration discriminator that combines only the already-proven bootstrap UUID adaptation and the already-proven ServerCheckin request-shape adaptation, then returns control to unmodified PPC CarbonCore. The result will determine whether its existing `FindService("LaunchApplicationServices")` transaction succeeds without another adapter.
 
 No additional XNU change is indicated.
+
+
+## Dual CoreServices integration proof: CarbonCore service acquisition succeeds
+
+The companion runtime repository has completed the corrected v3 dual CoreServices integration experiment.
+
+On Lion, the translated PPC process used the process-local adapter for exactly the two independently proven request-shape differences:
+
+- the UUID-expanded coreservicesd bootstrap lookup;
+- the native simple `0x18` ServerCheckin request.
+
+Both adaptations succeeded. The ServerCheckin reply contained a nonzero session port and options `0x03000000`. Unmodified Snow Leopard PPC CarbonCore then completed its existing `FindService("LaunchApplicationServices")` transaction and returned a nonzero service port; its exposed check-in port was also nonzero and process options were zero.
+
+No crash/core diagnostic was produced. The kernel and protected runtime hashes remained unchanged. The native syscall-295 probe remained a clean EBADF/no-SIGSYS PASS.
+
+This closes the CarbonCore system-service transport boundary and establishes that no additional FindService compatibility adapter is required.
+
+The runtime repository is now proceeding with a pre-dispatch compatibility discriminator that keeps the proven CoreServices adapter active and calls the untouched Snow Leopard PPC `SessionGetInfo(callerSecuritySession,...)` path. That is the next unresolved primitive before LaunchServices `_LSDoInitializeProcessesServices`.
+
+No additional XNU change is indicated.
