@@ -188,3 +188,6 @@ The latest runtime bootstrap discriminator localizes the current failure entirel
 
 
 The corrected runtime bootstrap protocol audit confirms the active defect is a user-space MIG request-layout mismatch: Snow Leopard PPC sends a `0xac` `look_up2` request, while Lion's generated client/server contract contains an extra 16-byte instance UUID and uses `0xbc`. The next runtime stage is one guarded process-local Lion-format lookup transaction, stopping before CoreServices `ServerCheckin`. No additional XNU change is indicated.
+
+
+The runtime bootstrap adapter proof now succeeds: a translated PPC task sending Lion's UUID-expanded `look_up2` request receives a valid nonzero coreservicesd port. The next runtime step is process-local integration of that exact adaptation into CarbonCore's existing call path, stopping after the CoreServices system-service state is observed. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
