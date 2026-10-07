@@ -194,3 +194,6 @@ The runtime bootstrap adapter proof now succeeds: a translated PPC task sending 
 
 
 The latest runtime integration run proves that the bootstrap UUID adapter works inside CarbonCore, but the next CoreServices step still fails. The shipped stubs show a second user-space MIG mismatch: Snow Leopard PPC sends a complex `0x28` ServerCheckin request, while Lion expects a simple `0x18` request and rejects the complex form. The next runtime stage is a standalone native-Lion-format ServerCheckin proof. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
+
+
+The runtime standalone ServerCheckin proof now passes completely. A translated PPC task using the already-proven Lion-format bootstrap lookup can send Lion's native simple `0x18` ServerCheckin request and receives the expected complex reply with a nonzero session port; the Snow Leopard legacy `0x28` control also passes. The runtime repository is now integrating only these two proven user-space adaptations into CarbonCore's real path and will observe whether its unchanged `FindService("LaunchApplicationServices")` succeeds. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
