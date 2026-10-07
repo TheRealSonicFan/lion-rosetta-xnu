@@ -491,3 +491,18 @@ The remaining zero-port boundary is therefore runtime state rather than a demons
 The runtime repository is proceeding with one guarded post-call state discriminator using the guest CarbonCore's existing exported check-in/status helpers. No direct RPC injection, framework patch, or kernel change is involved.
 
 No additional XNU change is indicated.
+
+
+## CoreServices stage discriminator: check-in session unavailable
+
+The companion runtime repository has completed the guarded CoreServices system-service stage discriminator.
+
+The exact PPC subject passes on Snow Leopard with a nonzero `LaunchApplicationServices` port and nonzero CarbonCore server-checkin port. On Lion, the same subject returns normally from service acquisition but reports both ports as zero, process options `0x00000002`, no crash/core diagnostic, and `RESULT: CHECKIN_SESSION_UNAVAILABLE`.
+
+The native syscall-295 probe remains a clean EBADF/no-SIGSYS PASS, and all protected kernel/runtime identities remain unchanged.
+
+This localizes the active failure before `FindService`: the guest PPC CarbonCore does not establish a usable coreservicesd client/check-in session.
+
+The runtime repository is therefore testing only the first half of the remaining `bootstrap_look_up2 -> ServerCheckin` boundary. The next one-shot PPC probe performs the exact coreservicesd bootstrap lookup with the recovered target PID and 64-bit flags value, and deliberately does not call `ServerCheckin` in the same run.
+
+No additional XNU change is indicated.
