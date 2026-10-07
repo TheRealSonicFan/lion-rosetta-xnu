@@ -200,3 +200,6 @@ The runtime standalone ServerCheckin proof now passes completely. A translated P
 
 
 The runtime dual CoreServices integration now passes completely: the translated PPC process succeeds through adapted bootstrap lookup, adapted ServerCheckin, and unmodified CarbonCore `FindService("LaunchApplicationServices")`, yielding nonzero check-in and service ports with no crash or protected-file change. The next runtime stage moves above CarbonCore and tests the untouched Snow Leopard PPC `SessionGetInfo` path under the proven process-local CoreServices adapter. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
+
+
+The runtime pre-dispatch compatibility discriminator has now moved the active failure above CarbonCore and into the restored Snow Leopard PPC Security session path. With both proven CoreServices adaptations active, `scCreateSystemServiceVersion("LaunchApplicationServices")` succeeds on Lion, but the untouched `SessionGetInfo(callerSecuritySession,...)` call returns status `1` with no session ID or attributes. The exact Snow Leopard control succeeds. The runtime repository is next performing a read-only shipped-binary Security/securityd protocol audit before any session compatibility proof is designed. The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS and no additional XNU change is indicated.
