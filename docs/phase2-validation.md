@@ -562,3 +562,20 @@ A re-read of the previously collected shipped stubs corrects an earlier runtime-
 The runtime repository is therefore proceeding with a standalone one-transaction proof of Lion's native simple ServerCheckin request from translated PPC, after the already-proven adapted bootstrap lookup.
 
 The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU change is indicated.
+
+
+## ServerCheckin protocol adapter proof: native Lion form succeeds
+
+The companion runtime repository has completed the guarded standalone ServerCheckin protocol adapter experiment.
+
+The Snow Leopard PPC control sent the recovered complex `0x28` ServerCheckin request and received a nonzero session port.
+
+On Lion, the translated PPC subject first completed the already-proven UUID-expanded coreservicesd lookup. It then sent Lion's native simple `0x18` ServerCheckin request with request ID `0x2710` and receive size `0x3c`. Lion returned Mach success and the expected complex `0x34` reply with reply ID `0x2774`, descriptor count 1, disposition `0x11`, a nonzero session port, and options `0x03000000`.
+
+No crash/core diagnostic was produced. The kernel and protected runtime hashes remained unchanged, and the native syscall-295 probe remained a clean EBADF/no-SIGSYS PASS.
+
+This independently closes the second user-space protocol defect at the standalone transaction level.
+
+The runtime repository is now proceeding with a single process-local integration discriminator that combines only the already-proven bootstrap UUID adaptation and the already-proven ServerCheckin request-shape adaptation, then returns control to unmodified PPC CarbonCore. The result will determine whether its existing `FindService("LaunchApplicationServices")` transaction succeeds without another adapter.
+
+No additional XNU change is indicated.
