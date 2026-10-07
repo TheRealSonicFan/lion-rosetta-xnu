@@ -178,7 +178,7 @@ The latest runtime pre-dispatch PPC probe returns a zero `LaunchApplicationServi
 The runtime CarbonCore client-internals audit has narrowed the zero CoreServices service port to either client check-in/session establishment or the subsequent `FindService` transaction. The next runtime stage is a read-only comparison of the actual `ServerCheckin` and `FindService` RPC contracts. No additional XNU change is indicated.
 
 
-The runtime CoreServices RPC audit found no static wire-format mismatch: Lion's server wrapper retains compatibility handling for Snow Leopard PPC's legacy `ServerCheckin` form, and `FindService` constants align. The next runtime step is a guarded one-shot discriminator of client check-in state versus service lookup failure. No additional XNU change is indicated.
+The runtime CoreServices RPC audit correctly found matching `FindService` constants, but its initial ServerCheckin compatibility interpretation was later corrected: Snow Leopard PPC sends a complex `0x28` request while Lion expects a simple `0x18` request and rejects the complex form. No additional XNU change is indicated.
 
 
 The latest runtime stage discriminator shows that the translated PPC CarbonCore never acquires a usable coreservicesd server-checkin port on Lion, while the exact Snow Leopard control does. The runtime investigation has narrowed this to the `bootstrap_look_up2 -> ServerCheckin` boundary and is next testing only the bootstrap lookup, with no direct server check-in in the same run. The syscall-295 safety probe remains healthy and no additional XNU change is indicated.
