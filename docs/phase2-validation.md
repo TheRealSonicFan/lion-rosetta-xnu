@@ -484,7 +484,7 @@ No additional XNU change is indicated.
 
 The companion runtime repository has completed the CarbonCore system-service RPC protocol audit.
 
-Snow Leopard PPC uses an older complex `ServerCheckin` request, but Lion's server wrapper explicitly retains handling for that legacy descriptor-bearing form. The `FindService` request/reply IDs and message sizes align directly between Snow Leopard PPC and Lion native CarbonCore.
+Snow Leopard PPC uses an older complex `ServerCheckin` request. A later re-read of Lion's shipped `__XServerCheckin` wrapper corrects the initial interpretation here: Lion rejects the complex form and accepts only its simple `0x18` request. The `FindService` request/reply IDs and message sizes still align directly between Snow Leopard PPC and Lion native CarbonCore.
 
 The remaining zero-port boundary is therefore runtime state rather than a demonstrated wire-format mismatch: either the translated PPC CarbonCore fails to establish a usable coreservicesd client/check-in session, or check-in succeeds and the subsequent `LaunchApplicationServices` service lookup fails.
 
