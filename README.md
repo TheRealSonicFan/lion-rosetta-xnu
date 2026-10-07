@@ -182,3 +182,6 @@ The runtime CoreServices RPC audit found no static wire-format mismatch: Lion's 
 
 
 The latest runtime stage discriminator shows that the translated PPC CarbonCore never acquires a usable coreservicesd server-checkin port on Lion, while the exact Snow Leopard control does. The runtime investigation has narrowed this to the `bootstrap_look_up2 -> ServerCheckin` boundary and is next testing only the bootstrap lookup, with no direct server check-in in the same run. The syscall-295 safety probe remains healthy and no additional XNU change is indicated.
+
+
+The latest runtime bootstrap discriminator localizes the current failure entirely to user-space launchd/bootstrap IPC: the Snow Leopard PPC client succeeds on Snow Leopard but receives `MIG_BAD_ARGUMENTS` from Lion for the same coreservicesd lookup. Apple OSS source shows Lion added an instance UUID field to the underlying `vproc_mig_look_up2` request while retaining the public `bootstrap_look_up2` API. The next runtime stage is read-only binary confirmation of that request-layout change. The syscall-295 path remains healthy and no additional XNU change is indicated.
