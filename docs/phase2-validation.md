@@ -611,6 +611,10 @@ No crash/core diagnostic was produced. Protected runtime and kernel identities r
 
 The active compatibility boundary is therefore user-space Security/session behavior, not XNU or CarbonCore.
 
-The subsequent read-only Security/securityd shipped-binary audit has passed on Snow Leopard and Lion. It proves that the restored Snow Leopard PPC `ucsp_client_getSessionInfo` request is `0x428` (1064), correcting the earlier source-only `0x429` arithmetic, and confirms that the first public `SessionGetInfo` call also performs legacy SecurityServer lookup/verification/setup before that request. Lion's native Security path uses `CommonCriteria::AuditInfo`. Static evidence does not yet identify which legacy first-use/session transaction fails.
+The subsequent read-only Security/securityd shipped-binary audit proved that the restored Snow Leopard PPC `ucsp_client_getSessionInfo` request is `0x428` (1064), and that first use performs SecurityServer lookup/verification/setup before that request.
 
-The runtime repository is therefore proceeding with a process-local, pass-through SecurityServer bootstrap/Mach RPC discriminator. This remains a user-space compatibility investigation; no additional XNU change is indicated.
+The follow-on Security-only discriminator has now localized the live Lion failure earlier still. Snow Leopard resolves `com.apple.SecurityServer` and then completes `verifyPrivileged2`, setup, and `getSessionInfo`. Lion's translated PPC client instead receives `-304` / `MIG_BAD_ARGUMENTS` directly from `bootstrap_look_up("com.apple.SecurityServer")`, with a zero service port; no legacy Security ucsp request is sent.
+
+This matches the already-proven user-space launchd lookup schema evolution (`0xac` Snow Leopard request versus Lion's UUID-expanded `0xbc` form). The runtime repository is now proceeding with a standalone, one-transaction Lion-format SecurityServer bootstrap lookup proof using target PID 0, zero instance UUID, and flags 0.
+
+This remains entirely a user-space compatibility boundary; no additional XNU change is indicated.
