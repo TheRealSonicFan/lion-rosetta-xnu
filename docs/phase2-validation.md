@@ -613,8 +613,10 @@ The active compatibility boundary is therefore user-space Security/session behav
 
 The subsequent read-only Security/securityd shipped-binary audit proved that the restored Snow Leopard PPC `ucsp_client_getSessionInfo` request is `0x428` (1064), and that first use performs SecurityServer lookup/verification/setup before that request.
 
-The follow-on Security-only discriminator has now localized the live Lion failure earlier still. Snow Leopard resolves `com.apple.SecurityServer` and then completes `verifyPrivileged2`, setup, and `getSessionInfo`. Lion's translated PPC client instead receives `-304` / `MIG_BAD_ARGUMENTS` directly from `bootstrap_look_up("com.apple.SecurityServer")`, with a zero service port; no legacy Security ucsp request is sent.
+The follow-on Security-only discriminator localized the live Lion failure at `bootstrap_look_up("com.apple.SecurityServer")`, before any legacy Security ucsp request.
 
-This matches the already-proven user-space launchd lookup schema evolution (`0xac` Snow Leopard request versus Lion's UUID-expanded `0xbc` form). The runtime repository is now proceeding with a standalone, one-transaction Lion-format SecurityServer bootstrap lookup proof using target PID 0, zero instance UUID, and flags 0.
+The companion runtime repository has now completed the standalone SecurityServer bootstrap proof. Snow Leopard's ordinary lookup returned a nonzero service port. On Lion, the translated PPC subject sent the binary-confirmed UUID-expanded `0xbc` lookup request (request ID `0x194`, target PID 0, zero instance UUID, flags 0) for `com.apple.SecurityServer`; Lion returned Mach success and the expected complex `0x28` reply with one descriptor and a nonzero service port.
+
+This closes the Security first-use bootstrap failure as the same user-space launchd request-layout mismatch already proven for the earlier coreservicesd path. The runtime repository is now proceeding with a process-local Security-only integration test that adapts only this bootstrap lookup and passively records the untouched Security ucsp requests that follow.
 
 This remains entirely a user-space compatibility boundary; no additional XNU change is indicated.
