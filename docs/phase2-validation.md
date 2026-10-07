@@ -549,3 +549,16 @@ This experimentally closes the launchd/bootstrap request-layout defect itself.
 The runtime repository is now proceeding with a process-local integration discriminator: a private PPC dyld interposer adapts only CarbonCore's exact coreservicesd bootstrap lookup and then lets unmodified PPC CarbonCore continue into its existing `ServerCheckin -> FindService` path.
 
 No direct CoreServices RPC is issued by the custom test code, no system binary is patched, and no additional XNU change is indicated.
+
+
+## Bootstrap integration reaches ServerCheckin protocol boundary
+
+The companion runtime repository has completed the guarded bootstrap integration experiment.
+
+The validated process-local bootstrap adapter succeeds inside the real Snow Leopard PPC CarbonCore call path on Lion and returns a nonzero coreservicesd service port. CarbonCore nevertheless ends with a zero server-checkin port, zero requested service port, process options `0x00000002`, no crash/core, and `RESULT: BOOTSTRAP_COMPAT_SERVERCHECKIN_FAILURE`.
+
+A re-read of the previously collected shipped stubs corrects an earlier runtime-side interpretation: Snow Leopard PPC `ServerCheckin` sends a complex `0x28` request with one port descriptor, while Lion native i386 sends a simple `0x18` request. Lion's i386 `__XServerCheckin` rejects complex requests before reaching `__scserver_ServerCheckin`.
+
+The runtime repository is therefore proceeding with a standalone one-transaction proof of Lion's native simple ServerCheckin request from translated PPC, after the already-proven adapted bootstrap lookup.
+
+The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU change is indicated.
