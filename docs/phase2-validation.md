@@ -609,6 +609,6 @@ On Lion, translated PPC CarbonCore again completes its adapted bootstrap lookup 
 
 No crash/core diagnostic was produced. Protected runtime and kernel identities remained unchanged. The native syscall-295 probe remains a clean EBADF/no-SIGSYS PASS.
 
-The active compatibility boundary is therefore user-space Security/session behavior, not XNU or CarbonCore. Historical Security source indicates that the legacy securityd session-information RPC was retired in favor of a kernel-backed native path, but the exact underlying Mach/MIG return from the translated client has not yet been proven.
+The active compatibility boundary is therefore user-space Security/session behavior, not XNU or CarbonCore. Historical Security source indicates that the legacy SecurityServer first-use/session path diverged from Lion's kernel-backed native path; the retired session-information RPC is the leading candidate, but connection/setup occurs in the same first call and the exact failing Mach/MIG substep has not yet been proven.
 
 The runtime repository is proceeding with a read-only Security/securityd shipped-binary protocol audit. No additional XNU change is indicated.
