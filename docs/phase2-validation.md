@@ -521,3 +521,18 @@ Public Apple launchd source for the exact baselines shows a matching user-space 
 The runtime repository is now performing a read-only shipped-binary audit of liblaunch/libSystem and launchd to confirm the exact request layouts before any process-local protocol adapter is attempted.
 
 The syscall-295 safety probe remains healthy. No additional XNU change is indicated.
+
+
+## Bootstrap protocol binary audit: request-layout mismatch confirmed
+
+The companion runtime repository has completed the corrected Snow Leopard/Lion bootstrap protocol audit.
+
+The shipped Snow Leopard PPC `vproc_mig_look_up2` request uses message ID `0x194`, send size `0xac`, receive size `0x6c`, and reply ID `0x1f8`. Its target PID is followed directly by the 64-bit flags field.
+
+Lion's private MIG symbol name is stripped, but the corrected analyzer resolves the unique repeated non-stub `bootstrap_look_up3` callee in i386 liblaunch. The corresponding Lion request keeps the same message/reply IDs and receive size but sends `0xbc` bytes and inserts a 16-byte field between target PID and flags.
+
+That exact `0x10` expansion matches Lion's `instanceid : uuid_t` addition and explains the translated Snow Leopard PPC client's live `MIG_BAD_ARGUMENTS` response from Lion launchd.
+
+The runtime repository is proceeding with one process-local proof transaction that constructs the Lion-format request and stops before CoreServices `ServerCheckin`.
+
+The syscall-295/XNU boundary remains closed. No additional XNU change is indicated.
