@@ -191,3 +191,6 @@ The corrected runtime bootstrap protocol audit confirms the active defect is a u
 
 
 The runtime bootstrap adapter proof now succeeds: a translated PPC task sending Lion's UUID-expanded `look_up2` request receives a valid nonzero coreservicesd port. The next runtime step is process-local integration of that exact adaptation into CarbonCore's existing call path, stopping after the CoreServices system-service state is observed. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
+
+
+The latest runtime integration run proves that the bootstrap UUID adapter works inside CarbonCore, but the next CoreServices step still fails. The shipped stubs show a second user-space MIG mismatch: Snow Leopard PPC sends a complex `0x28` ServerCheckin request, while Lion expects a simple `0x18` request and rejects the complex form. The next runtime stage is a standalone native-Lion-format ServerCheckin proof. The syscall-295/kernel boundary remains healthy and no additional XNU change is indicated.
