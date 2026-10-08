@@ -710,3 +710,14 @@ The decisive user-space difference is in `__SCSessionUniverseByUIDAcquireAndLock
 Snow PPC also continues after a nonzero InitConnection return without constructing a mapped universe, whereas Lion native code logs the RPC error and aborts. This is consistent with the preserved translated-PPC `-304/MIG_BAD_ARGUMENTS` register clue and subsequent SIGBUS at `0x3c`, but the runtime repository is first performing a read-only generated-stub protocol audit to prove the exact message ID/layout/size mismatch before writing any adapter.
 
 The native syscall-295 gate remains validated. No additional XNU change is indicated.
+
+
+## SCSessionUniverse InitConnection wire mismatch proof
+
+The companion runtime repository has completed the Snow Leopard/Lion generated-stub audit for the CarbonCore `SCSessionUniverseInitConnection_rpc` boundary under the first post-dispatch `GetProcessForPID` failure.
+
+The mismatch is now exact. Snow Leopard PPC sends request ID `0x2712`, size `0x2c`, with scalar payload `PID, UID, layout`. Lion retains request ID `0x2712` but its native client and generated dispatcher use size `0x28` with payload `UID, layout`; the explicit PID field is gone. Lion's dispatcher requires `msgh_size == 0x28` and emits `MIG_BAD_ARGUMENTS (-304)` on the legacy request-shape failure path. This directly explains the preserved translated-PPC `0xd0feffff` / byte-swapped `-304` result before the later null-universe SIGBUS.
+
+The reply remains wire-compatible for this boundary: reply ID `0x2776`, success size `0x2c`, error size `0x24`. The runtime repository is advancing to a process-local request-only `mach_msg` adapter that drops the legacy PID and shifts UID/layout into Lion's `0x28` request, while leaving the reply unchanged. The adapter is first gated by a Snow Leopard passthrough control.
+
+The native syscall-295 gate remains validated. This is a user-space CoreServices protocol boundary; no additional XNU change is indicated.
