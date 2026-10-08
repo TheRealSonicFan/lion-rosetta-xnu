@@ -796,3 +796,25 @@ The native syscall-295 probe still reaches the compatibility front-end and retur
 The runtime repository is advancing to one `SetFrontProcess` call using the same PSN, still before window creation, front-process verification, or an event loop.
 
 No additional XNU code change is indicated.
+
+
+## SetFrontProcess returned-error boundary
+
+The runtime repository has completed the first front-process selection experiment.
+
+The Snow Leopard direct-execution control returned status 0 from:
+
+```text
+GetProcessForPID
+GetProcessPID
+TransformProcessType
+SetFrontProcess
+```
+
+On Lion, the same validated compatibility stack again passed the repaired SessionInit transaction, both Process Manager identity directions, and `TransformProcessType`, but `SetFrontProcess` returned `-50` normally. The call did not crash or abort, no second exact SessionInit request occurred, no new crash/core diagnostic was produced, and all guarded runtime/kernel identities remained unchanged.
+
+The native syscall-295 probe still reaches the compatibility front-end and returns EBADF without SIGSYS. No additional XNU behavior is implicated.
+
+The runtime repository is advancing to a read-only differential audit of HIServices `SetFrontProcess`/`SetFrontProcessWithOptions` and its CoreGraphics/CGS/CPS/LaunchServices dependencies before any new compatibility behavior is considered.
+
+No additional XNU code change is indicated.
