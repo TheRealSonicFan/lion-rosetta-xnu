@@ -679,3 +679,12 @@ On Lion, with the proven CoreServices bootstrap/ServerCheckin adapter and AuditI
 This closes the earlier LaunchServices dispatch-table abort candidate. The runtime repository is now advancing to exactly one `GetProcessForPID(getpid(), &psn)` call after re-proving dispatch state in the same PPC process, with the historical `LSDONOTABORTIFNOASN` override explicitly left unset.
 
 The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility boundary; no additional XNU change is indicated.
+
+
+## Post-dispatch GetProcessForPID termination
+
+The companion runtime repository has now reached `GetProcessForPID(getpid(), &psn)` only after re-proving a nonzero Snow Leopard PPC LaunchServices process-dispatch table and process-services port in the same Lion process. The CoreServices bootstrap/ServerCheckin adapter and AuditInfo-backed Security `SessionGetInfo` adapter both passed first.
+
+The identity call did not return. The first runner recorded exit status `138` and listed a crash report plus `/cores/core.17940`. Its historical result label called every non-returning identity call an “abort,” but that classification did not inspect the actual signal, and this status differs from the already-proven status-`134` SIGABRT family. Protected hashes remained unchanged, and the native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS.
+
+The runtime repository is therefore performing a read-only preserved-core/crash postmortem before any no-ASN override or further compatibility change. No additional XNU change is indicated.
