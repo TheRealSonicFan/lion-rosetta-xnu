@@ -657,3 +657,14 @@ On Lion, the v3 CoreServices adapter completed the coreservicesd bootstrap and S
 The runtime repository is therefore advancing to the first LaunchServices process-services wire transaction: one exact Snow Leopard PPC `InitializeProcessesServices` request (ID `0x4650`, send `0x2c`, receive `0x50`, expected reply `0x46b4`) after the now-proven service/session prerequisites. That stage remains entirely user-space and stops before dispatch-table installation or Process Manager identity calls.
 
 The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. No additional XNU change is indicated.
+
+
+## LaunchServices InitializeProcessesServices wire proof
+
+The companion runtime repository has now completed the first LaunchServices process-services wire transaction after the proven CoreServices and Security compatibility prerequisites.
+
+On Lion, the translated Snow Leopard PPC client sent the binary-proven InitializeProcessesServices request with ID `0x4650`, send size `0x2c`, receive size `0x50`, the current security session ID twice, and process-services version `0x00a1be40`. Mach transport succeeded. Lion coreservicesd returned the expected complex reply ID `0x46b4`, size `0x48`, two descriptors, a nonzero process port, `outVersion=0x00a1be40`, `outError=0`, and `outCount=0`. The Snow Leopard control produced the same successful reply shape and scalar values.
+
+The runtime repository is therefore advancing to the real Snow Leopard PPC LaunchServices post-reply setup path. The next experiment calls the audited local `getProcessDispatchTable()` function directly, then verifies the established process-services port, while still stopping before any Process Manager identity API.
+
+The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility investigation; no additional XNU change is indicated.
