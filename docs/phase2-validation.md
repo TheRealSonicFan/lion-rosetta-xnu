@@ -818,3 +818,23 @@ The native syscall-295 probe still reaches the compatibility front-end and retur
 The runtime repository is advancing to a read-only differential audit of HIServices `SetFrontProcess`/`SetFrontProcessWithOptions` and its CoreGraphics/CGS/CPS/LaunchServices dependencies before any new compatibility behavior is considered.
 
 No additional XNU code change is indicated.
+
+
+## SetFrontProcess call-path audit localizes failure to CPS/CoreGraphics
+
+The runtime repository has completed the first read-only SetFrontProcess call-path audit on Snow Leopard and Lion.
+
+The audit confirms that:
+
+```text
+Snow PPC SetFrontProcessWithOptions -> _CPSSetFrontProcess
+Lion i386 SetFrontProcessWithOptions -> _CPSSetFrontProcess
+```
+
+with the public pointer/options checks preceding that call. The actual experiment supplied a non-null PSN and options 0, so the Lion `-50` result is generated at or below the CoreGraphics/CPS boundary rather than by the initial HIServices argument validation.
+
+The validated Rosetta cache/map is still identical across Snow Leopard and Lion and contains both HIServices and CoreGraphics. Thus the translated PPC guest continues to execute the restored Snow Leopard client code while talking to Lion host-side graphics/session services.
+
+The first audit did not exact-target the late CoreGraphics CPS/CGS function windows, so the runtime repository is advancing to a second read-only audit that captures `_CPSSetFrontProcess`, `__CPSSetFrontProcessWithOptions`, `__CGSSetFrontProcess`, default-connection, and CPS registration helpers explicitly.
+
+The native syscall-295 compatibility probe remains unrelated to this returned user-space status. No additional XNU code change is indicated.
