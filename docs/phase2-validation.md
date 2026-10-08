@@ -721,3 +721,28 @@ The mismatch is now exact. Snow Leopard PPC sends request ID `0x2712`, size `0x2
 The reply remains wire-compatible for this boundary: reply ID `0x2776`, success size `0x2c`, error size `0x24`. The runtime repository is advancing to a process-local request-only `mach_msg` adapter that drops the legacy PID and shifts UID/layout into Lion's `0x28` request, while leaving the reply unchanged. The adapter is first gated by a Snow Leopard passthrough control.
 
 The native syscall-295 gate remains validated. This is a user-space CoreServices protocol boundary; no additional XNU change is indicated.
+
+
+## SessionUniverse InitConnection adapter pass and next Process Manager boundary
+
+The runtime repository has now completed the corrected v5 SessionUniverse InitConnection compatibility experiment.
+
+On Snow Leopard, the v5 CoreServices interposer observed the exact legacy InitConnection transaction transparently and the control completed `GetProcessForPID` successfully.
+
+On Lion, the existing user-space compatibility stack now proves:
+
+```text
+CoreServices bootstrap adaptation      PASS
+CoreServices ServerCheckin adaptation  PASS
+Security SessionGetInfo AuditInfo      PASS
+SessionUniverse InitConnection v5      PASS
+GetProcessForPID(getpid(), &psn)       PASS with nonzero PSN
+```
+
+The InitConnection adapter translated only request ID `0x2712` from Snow PPC's `0x2c [PID,UID,layout]` request to Lion's `0x28 [UID,layout]` request and received the compatible `0x2776 / 0x2c / RetCode=0` reply. The PPC identity call then returned normally. No new crash/core diagnostic was produced and all guarded runtime/kernel identities remained unchanged.
+
+The native syscall-295 probe still returns EBADF without SIGSYS under the validated kernel. This confirms that the repaired boundary remains entirely user-space.
+
+The runtime repository is advancing to a second documented Process Manager identity proof: `GetProcessPID` on the PSN returned by `GetProcessForPID`, requiring an exact PID round-trip and stopping before foreground conversion or GUI work.
+
+No additional XNU code change is indicated.
