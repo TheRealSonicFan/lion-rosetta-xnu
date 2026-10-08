@@ -688,3 +688,14 @@ The companion runtime repository has now reached `GetProcessForPID(getpid(), &ps
 The identity call did not return. The first runner recorded exit status `138` and listed a crash report plus `/cores/core.17940`. Its historical result label called every non-returning identity call an “abort,” but that classification did not inspect the actual signal, and this status differs from the already-proven status-`134` SIGABRT family. Protected hashes remained unchanged, and the native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS.
 
 The runtime repository is therefore performing a read-only preserved-core/crash postmortem before any no-ASN override or further compatibility change. No additional XNU change is indicated.
+
+
+## Post-dispatch GetProcessForPID SIGBUS localization
+
+The companion runtime repository has completed the preserved-core postmortem for the first `GetProcessForPID` call made after the translated PPC process had already established a nonzero LaunchServices dispatch table and process-services port.
+
+The failure is not the historical guest-requested SIGABRT/no-ASN branch. The crash is `EXC_BAD_ACCESS (SIGBUS)` with `KERN_PROTECTION_FAILURE` at guest address `0x3c`. The PPC stack localizes the fault through `GetProcessForPID -> __RegisterApplication -> __LSApplicationCheckIn -> __CSCheckFix -> _GetBugsForOurBundleIDFromCoreservicesd`, then through CoreFoundation FSRef conversion and CarbonCore filesystem/session-universe helpers, ending at `__SCSessionUniverseByUIDAcquireAndLock`.
+
+The PPC register state includes `r10=0xd0feffff`, which byte-swaps to signed `-304` / `MIG_BAD_ARGUMENTS`; this is being treated only as a static clue until the exact CarbonCore path proves it live.
+
+The runtime repository is therefore advancing to a read-only Snow Leopard/Lion CarbonCore session-universe differential audit. The native syscall-295 gate remains validated, and no additional XNU change is indicated.
