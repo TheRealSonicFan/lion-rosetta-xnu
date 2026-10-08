@@ -646,3 +646,14 @@ On Lion, the translated PPC one-tuple interposer called `getaudit_addr` successf
 No SecurityServer session RPC is needed for this `callerSecuritySession` API path. The runtime repository is now proceeding with a combined pre-dispatch integration using the already-proven CoreServices transport adapter plus this Security API adapter, while still stopping before LaunchServices process-services initialization and Process Manager identity calls.
 
 The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility boundary; no additional XNU change is indicated.
+
+
+## Combined pre-dispatch compatibility proof
+
+The companion runtime repository has now completed the combined pre-dispatch integration with both proven user-space compatibility layers active in the same translated PPC process.
+
+On Lion, the v3 CoreServices adapter completed the coreservicesd bootstrap and ServerCheckin adaptations and returned a nonzero `LaunchApplicationServices` service port. The AuditInfo-backed Security adapter then returned `SessionGetInfo(callerSecuritySession,...)=0` with a nonzero session ID and valid attributes. The original pre-dispatch subject reached `PREDISPATCH_PRIMITIVES_PASS` and exited normally. No crash/core diagnostic was produced and all protected identities remained unchanged.
+
+The runtime repository is therefore advancing to the first LaunchServices process-services wire transaction: one exact Snow Leopard PPC `InitializeProcessesServices` request (ID `0x4650`, send `0x2c`, receive `0x50`, expected reply `0x46b4`) after the now-proven service/session prerequisites. That stage remains entirely user-space and stops before dispatch-table installation or Process Manager identity calls.
+
+The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. No additional XNU change is indicated.
