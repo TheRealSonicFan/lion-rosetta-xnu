@@ -771,3 +771,28 @@ The native syscall-295 probe still reaches the compatibility front-end and retur
 The runtime repository is advancing to the first foreground-conversion boundary: one `TransformProcessType(..., kProcessTransformToForegroundApplication)` call after re-proving both identity directions, with a mandatory Snow Leopard direct-execution control before Lion.
 
 No additional XNU code change is indicated.
+
+
+## TransformProcessType foreground-conversion pass
+
+The runtime repository has now completed the first foreground-conversion experiment successfully.
+
+With the validated syscall-295 kernel and unchanged user-space compatibility stack, Lion now proves:
+
+```text
+CoreServices bootstrap adaptation                         PASS
+CoreServices ServerCheckin adaptation                     PASS
+Security SessionGetInfo AuditInfo                         PASS
+SessionUniverse InitConnection v5                         PASS
+GetProcessForPID(getpid(), &psn)                          PASS
+GetProcessPID(returned PSN, &pid)                         PASS
+TransformProcessType(returned PSN, foreground)            PASS
+```
+
+The accepted Lion run returned status 0 from `TransformProcessType`, produced no new crash/core diagnostic, and left all guarded runtime/kernel identities unchanged. Snow Leopard also passed the same direct-execution foreground conversion, validating that test context.
+
+The native syscall-295 probe still reaches the compatibility front-end and returns EBADF without SIGSYS. No additional XNU behavior is implicated.
+
+The runtime repository is advancing to one `SetFrontProcess` call using the same PSN, still before window creation, front-process verification, or an event loop.
+
+No additional XNU code change is indicated.
