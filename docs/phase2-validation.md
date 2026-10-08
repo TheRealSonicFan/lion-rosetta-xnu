@@ -699,3 +699,14 @@ The failure is not the historical guest-requested SIGABRT/no-ASN branch. The cra
 The PPC register state includes `r10=0xd0feffff`, which byte-swaps to signed `-304` / `MIG_BAD_ARGUMENTS`; this is being treated only as a static clue until the exact CarbonCore path proves it live.
 
 The runtime repository is therefore advancing to a read-only Snow Leopard/Lion CarbonCore session-universe differential audit. The native syscall-295 gate remains validated, and no additional XNU change is indicated.
+
+
+## CarbonCore session-universe InitConnection differential
+
+The companion runtime repository has completed the Snow Leopard/Lion CarbonCore session-universe differential audit. Both reports pass, and the validated Rosetta cache/map identities are unchanged across the two systems.
+
+The decisive user-space difference is in `__SCSessionUniverseByUIDAcquireAndLock`. Snow Leopard PPC calls `__scclient_SCSessionUniverseInitConnection_rpc` with five arguments, including an explicit PID: `port,pid,uid,0,&out`. Snow Leopard i386/x86_64 use the same five-argument family with architecture/layout values 2/3. Lion native CarbonCore instead uses `port,uid,2/3,&out`, with the explicit PID removed.
+
+Snow PPC also continues after a nonzero InitConnection return without constructing a mapped universe, whereas Lion native code logs the RPC error and aborts. This is consistent with the preserved translated-PPC `-304/MIG_BAD_ARGUMENTS` register clue and subsequent SIGBUS at `0x3c`, but the runtime repository is first performing a read-only generated-stub protocol audit to prove the exact message ID/layout/size mismatch before writing any adapter.
+
+The native syscall-295 gate remains validated. No additional XNU change is indicated.
