@@ -838,3 +838,22 @@ The validated Rosetta cache/map is still identical across Snow Leopard and Lion 
 The first audit did not exact-target the late CoreGraphics CPS/CGS function windows, so the runtime repository is advancing to a second read-only audit that captures `_CPSSetFrontProcess`, `__CPSSetFrontProcessWithOptions`, `__CGSSetFrontProcess`, default-connection, and CPS registration helpers explicitly.
 
 The native syscall-295 compatibility probe remains unrelated to this returned user-space status. No additional XNU code change is indicated.
+
+
+## SetFrontProcess CPS/CGS audit resolves pre-transport and latent wire boundaries
+
+The runtime repository has completed the focused read-only CoreGraphics CPS/CGS audit.
+
+The audit proves that restored Snow Leopard PPC `__CPSSetFrontProcessWithOptions` returns raw status `0x3eb` when its current CoreGraphics connection record is null, before issuing `__CGSSetFrontProcess`. Snow PPC HIServices maps that positive CPS status to public `paramErr (-50)`. Lion native CoreGraphics has the same no-connection guard.
+
+The same audit also proves a later user-space protocol difference if transport is reached:
+
+```text
+Snow PPC __CGSSetFrontProcess: request 0x729e, reply 0x7302
+Lion i386 __CGSSetFrontProcess: request 0x72a1, reply 0x7305
+send/receive sizes on both: 0x30 / 0x2c
+```
+
+The runtime repository is therefore advancing to a process-local CPS connection-state discriminator that reads the audited PPC CoreGraphics connection slot and records the raw `CPSSetFrontProcess` result before any CGS request-ID adaptation is attempted.
+
+The native syscall-295 compatibility path remains healthy and unrelated to this user-space graphics/session boundary. No additional XNU code change is indicated.
