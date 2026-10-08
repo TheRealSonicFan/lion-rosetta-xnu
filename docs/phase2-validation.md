@@ -668,3 +668,14 @@ On Lion, the translated Snow Leopard PPC client sent the binary-proven Initializ
 The runtime repository is therefore advancing to the real Snow Leopard PPC LaunchServices post-reply setup path. The next experiment calls the audited local `getProcessDispatchTable()` function directly, then verifies the established process-services port, while still stopping before any Process Manager identity API.
 
 The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility investigation; no additional XNU change is indicated.
+
+
+## LaunchServices process-dispatch setup proof
+
+The companion runtime repository has now completed the corrected Snow Leopard PPC LaunchServices process-dispatch setup experiment.
+
+On Lion, with the proven CoreServices bootstrap/ServerCheckin adapter and AuditInfo-backed Security `SessionGetInfo` adapter active, the real Snow Leopard PPC `getProcessDispatchTable()` setup path returned nonzero dispatch table `0xa0bbf59c`. A subsequent `getProcessesServerPort()` call returned nonzero port `0x00008f03`. No diagnostic was produced and all protected identities remained unchanged. The corrected Snow Leopard control passed the same local-function resolution/prologue checks and returned a nonzero dispatch table and server port.
+
+This closes the earlier LaunchServices dispatch-table abort candidate. The runtime repository is now advancing to exactly one `GetProcessForPID(getpid(), &psn)` call after re-proving dispatch state in the same PPC process, with the historical `LSDONOTABORTIFNOASN` override explicitly left unset.
+
+The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility boundary; no additional XNU change is indicated.
