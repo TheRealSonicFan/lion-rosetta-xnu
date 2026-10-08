@@ -635,3 +635,14 @@ On Lion, native i386 `SessionGetInfo(callerSecuritySession,...)` returned status
 The runtime repository is now proceeding with a one-tuple process-local `SessionGetInfo(callerSecuritySession,...)` adapter that reads `auditinfo_addr_t.ai_asid` and `ai_flags` directly and bypasses the retired SecurityServer `getSessionInfo=0x428` RPC entirely.
 
 The validated syscall-295 gate remains a clean EBADF/no-SIGSYS PASS, protected identities were unchanged, and no new diagnostic was produced. This remains a user-space compatibility boundary; no additional XNU change is indicated.
+
+
+## Security SessionGetInfo AuditInfo API adapter proof
+
+The companion runtime repository has completed the standalone process-local `SessionGetInfo(callerSecuritySession,...)` compatibility proof.
+
+On Lion, the translated PPC one-tuple interposer called `getaudit_addr` successfully, read the typed 0x30-byte `auditinfo_addr_t`, and returned `ai_asid=0x000186a3` with logical attribute bits `0x00002030`. The public PPC probe observed status 0 and exactly the same session ID and attributes. The raw PPC words confirm the expected big-endian view of the 64-bit `ai_flags` field: the high 32-bit half is at offset `0x28` and the low half is at `0x2c`.
+
+No SecurityServer session RPC is needed for this `callerSecuritySession` API path. The runtime repository is now proceeding with a combined pre-dispatch integration using the already-proven CoreServices transport adapter plus this Security API adapter, while still stopping before LaunchServices process-services initialization and Process Manager identity calls.
+
+The native syscall-295 gate remains a clean EBADF/no-SIGSYS PASS. This remains a user-space compatibility boundary; no additional XNU change is indicated.
