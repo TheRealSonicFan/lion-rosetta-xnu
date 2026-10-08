@@ -857,3 +857,16 @@ send/receive sizes on both: 0x30 / 0x2c
 The runtime repository is therefore advancing to a process-local CPS connection-state discriminator that reads the audited PPC CoreGraphics connection slot and records the raw `CPSSetFrontProcess` result before any CGS request-ID adaptation is attempted.
 
 The native syscall-295 compatibility path remains healthy and unrelated to this user-space graphics/session boundary. No additional XNU code change is indicated.
+
+
+## CPS null-connection discriminator closes current SetFrontProcess pre-transport boundary
+
+The runtime repository has completed the corrected CPS connection-state discriminator on Snow Leopard and Lion.
+
+Snow Leopard establishes the restored PPC CoreGraphics default connection during Process Manager registration: the decoded connection slot begins at zero, becomes nonzero after `GetProcessForPID`, and raw `CPSSetFrontProcess` returns 0.
+
+Lion shows the opposite live state. The same decoded Snow PPC CoreGraphics slot remains zero, HIServices reports that `_CGSDefaultConnection()` is NULL, and raw `CPSSetFrontProcess` returns `0x3eb` before the legacy `__CGSSetFrontProcess` request is reached. No new crash/core diagnostic was produced and all guarded identities remained unchanged.
+
+The runtime investigation is therefore moving one layer earlier into a read-only Snow-PPC/Lion-native differential audit of `_CGSDefaultConnection -> _CGSNewConnection`, WindowServer service-port acquisition, bootstrap/vproc/XPC use, and connection-creation transport. The previously observed `0x729e -> 0x72a1` SetFrontProcess request-ID difference remains a later latent boundary.
+
+The native syscall-295 probe still returns EBADF without SIGSYS. No additional XNU code change is indicated.
