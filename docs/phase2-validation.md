@@ -746,3 +746,28 @@ The native syscall-295 probe still returns EBADF without SIGSYS under the valida
 The runtime repository is advancing to a second documented Process Manager identity proof: `GetProcessPID` on the PSN returned by `GetProcessForPID`, requiring an exact PID round-trip and stopping before foreground conversion or GUI work.
 
 No additional XNU code change is indicated.
+
+
+## Process Manager identity round-trip pass
+
+The runtime repository has now completed the post-identity `GetProcessPID` round-trip experiment successfully.
+
+With the existing validated syscall-295 kernel and unchanged user-space compatibility stack, Lion now proves:
+
+```text
+CoreServices bootstrap adaptation       PASS
+CoreServices ServerCheckin adaptation   PASS
+Security SessionGetInfo AuditInfo       PASS
+SessionUniverse InitConnection v5       PASS
+GetProcessForPID(getpid(), &psn)        PASS
+GetProcessPID(returned PSN, &pid)       PASS
+returned pid == getpid()                YES
+```
+
+The accepted Lion run used the same v5 CoreServices interposer and v1 Security interposer as the preceding SessionInit proof. The PSN returned after registration was consumed by a second documented Process Manager identity API and mapped back to the exact subject PID. No new crash/core diagnostic was produced and protected hashes remained unchanged.
+
+The native syscall-295 probe still reaches the compatibility front-end and returns EBADF without SIGSYS. No additional XNU behavior is implicated.
+
+The runtime repository is advancing to the first foreground-conversion boundary: one `TransformProcessType(..., kProcessTransformToForegroundApplication)` call after re-proving both identity directions, with a mandatory Snow Leopard direct-execution control before Lion.
+
+No additional XNU code change is indicated.
