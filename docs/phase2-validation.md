@@ -870,3 +870,16 @@ Lion shows the opposite live state. The same decoded Snow PPC CoreGraphics slot 
 The runtime investigation is therefore moving one layer earlier into a read-only Snow-PPC/Lion-native differential audit of `_CGSDefaultConnection -> _CGSNewConnection`, WindowServer service-port acquisition, bootstrap/vproc/XPC use, and connection-creation transport. The previously observed `0x729e -> 0x72a1` SetFrontProcess request-ID difference remains a later latent boundary.
 
 The native syscall-295 probe still returns EBADF without SIGSYS. No additional XNU code change is indicated.
+
+
+## CGS default-connection audit localizes server-port acquisition
+
+The runtime repository has completed the read-only Snow Leopard/Lion CGS default-connection differential audit.
+
+Both systems had a live WindowServer. Snow PPC and Lion native `__CGSDefaultConnection` retain the same high-level `_CGSNewConnection` creation path, and their visible `__CGSNewConnectionPort` client contracts agree at request/reply IDs `0x7469/0x74cd`, receive size `0x44`, Mach options `0x3`, request bits `0x80001513`, and aligned client-name-plus-`0x44` send sizing.
+
+The concrete evolution is earlier in WindowServer server-port acquisition: Snow PPC `_CGSLookupServerPort` calls `_lookupServerPort(0,1)`, while Lion native x86_64 calls `_getSessionPort(1)` and falls back to `_CGSLookupServerRootPort(1)`; Lion additionally contains per-session WindowServer helpers, `bootstrap_look_up_per_user`, and XPC plumbing absent from the Snow PPC lookup path.
+
+The runtime investigation is therefore moving to a second read-only helper audit to prove the exact Snow service-name/bootstrap tuple and Lion replacement semantics before any process-local compatibility adapter is considered.
+
+The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
