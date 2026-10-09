@@ -927,3 +927,12 @@ On Lion 10.7.5, translated PPC successfully completed the native active WindowSe
 The earlier runner label `GETPROCESSFORPID_ABORT_OR_CRASH` was overbroad for this exact result; runtime `main` now distinguishes the clean status-1 early exit. The next runtime stage is a behavior-preserving trace of the immediate downstream CoreGraphics Mach transactions: DeathWatch `0x714c/0x71b0` and `__CGSNewConnectionPort 0x7469/0x74cd`. No request adaptation is being introduced at this stage.
 
 The native syscall-295 probe remains healthy, returning EBADF without SIGSYS. No additional XNU code change is indicated.
+
+
+## Passive CGS registration trace corrects DeathWatch path assumption
+
+The first Snow Leopard passive registration trace completed successfully at the platform level: `__CGSNewConnectionPort` request `0x7469` received Mach success and reply `0x74cd`, `GetProcessForPID` returned 0, and the CoreGraphics connection record became nonzero. The runtime runner nevertheless reported failure because it incorrectly required a `0x714c/0x71b0` DeathWatch transaction.
+
+The previously collected Snow PPC static audit resolves the discrepancy. The registration path is `_CGSNewConnection -> _CGSServerPort -> _lookupServerPort(0,0) -> __CGSNewConnectionPort`; the separate `_CGSLookupServerPort` helper is the path that wraps `_lookupServerPort(0,1)` with `__CGSSessionDeathWatchPort`. Runtime `main` now treats DeathWatch as optional evidence for this experiment and gates on the actual registration transaction `0x7469/0x74cd`.
+
+The native syscall-295 result remains healthy. No additional XNU code change is indicated.
