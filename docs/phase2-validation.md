@@ -983,3 +983,12 @@ The runtime standalone policy proof has now validated the exact compatibility tr
 Runtime `main` now advances to one registration-only integration using the existing CoreServices `mach_msg` interposer with an exact, predicate-gated live `0x71ac` normalization. Snow remains passthrough. The test asks only whether the restored client then reaches `__CGSNewConnectionPort 0x7469` and publishes a nonzero default connection. The known later `0x729e` foreground/CPS mismatch remains deliberately out of scope.
 
 Syscall 295 remains healthy, and no additional XNU code change is indicated.
+
+
+## Default CoreGraphics connection established; CPS registration remains the active user-space boundary
+
+The runtime server-version compatibility integration has now passed its narrow connection objective. Lion translated PPC accepted the exact NDR-aware `600/0 -> 545/0` server-version normalization, reached `__CGSNewConnectionPort 0x7469`, received expected reply `0x74cd` with Mach success, returned successfully from `GetProcessForPID`, and published a nonzero CoreGraphics default-connection record. No new crash/core diagnostic appeared and protected hashes remained unchanged.
+
+The same run still emitted `_RegisterApplication(), FAILED TO REGISTER PROCESS WITH CPS/CoreGraphics in WindowServer, err=-304` after the connection was established. The runtime boundary has therefore moved to CPS application registration. Runtime `main` now prepares a read-only differential of Snow PPC `__CPSRegisterWithServer -> __CGSCheckInApplication` versus Lion native `__CPSRegisterWithServer -> __CGSCreateApplication` before any new dynamic adapter is considered.
+
+The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU code change is indicated.
