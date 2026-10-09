@@ -936,3 +936,14 @@ The first Snow Leopard passive registration trace completed successfully at the 
 The previously collected Snow PPC static audit resolves the discrepancy. The registration path is `_CGSNewConnection -> _CGSServerPort -> _lookupServerPort(0,0) -> __CGSNewConnectionPort`; the separate `_CGSLookupServerPort` helper is the path that wraps `_lookupServerPort(0,1)` with `__CGSSessionDeathWatchPort`. Runtime `main` now treats DeathWatch as optional evidence for this experiment and gates on the actual registration transaction `0x7469/0x74cd`.
 
 The native syscall-295 result remains healthy. No additional XNU code change is indicated.
+
+
+## CGS session bridge passes but registration stops before NewConnection
+
+The corrected runtime passive trace now places the remaining translated-PPC CoreGraphics failure entirely in user space after the proven session-port adapter.
+
+Snow Leopard registration reaches `__CGSNewConnectionPort` request `0x7469`, receives Mach success with reply `0x74cd`, returns successfully from `GetProcessForPID`, and publishes a nonzero CoreGraphics connection record. Lion translated PPC instead completes the native active-root lookup, `GetSessionPort 0x7151/0x71b5`, validates the returned send right, and reports session-bootstrap `ADAPTER_PASS`, but exits with status 1 before any `0x7469` request is observed. No new crash/core diagnostic is produced and protected hashes remain unchanged.
+
+The runtime repository is therefore moving to a read-only differential audit of the internal CoreGraphics `_connectAndCheck` helper executed inside `_CGSServerPort` after the lookup and before selected-port publication. No new runtime request adaptation has been introduced, and the native syscall-295 probe remains healthy with EBADF/no-SIGSYS.
+
+No additional XNU code change is indicated.
