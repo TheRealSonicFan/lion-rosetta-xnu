@@ -965,3 +965,12 @@ The corrected runtime analyzer v2 shows that Snow PPC and Lion native CoreGraphi
 The important static difference is framework version provenance: Snow Leopard CoreGraphics is 545.0.0 and Lion CoreGraphics is 600.0.0. Snow PPC `_connectAndCheck` compares server-returned version values to its local values and can return `0x3f0`; Snow PPC `_CGSServerPort` handles `0x3f0` with `exit(1)`, matching the currently observed translated-PPC stop after the session-port adapter and before NewConnection.
 
 Runtime `main` therefore advances to a passive `0x7148/0x71ac` trace-v2 with a Snow positive control and exactly one Lion run. No reply rewrite or defaults override has been introduced. Syscall 295 remains healthy, and no additional XNU code change is indicated.
+
+
+## CGS server-version skew confirmed dynamically
+
+The runtime passive trace now confirms the remaining pre-NewConnection failure mechanism without implicating XNU. Snow PPC and Lion translated PPC both send the same private CoreGraphics server-version request `0x7148` and receive the expected complex `0x71ac` reply. The Snow raw version field `0x21020000` decodes through the PPC MIG NDR path to 545, while the Lion reply field `0x58020000` decodes to 600. The second version field is zero in both, and the remaining reply structure is equivalent apart from expected Mach port names.
+
+After the Lion 600/0 reply, restored Snow PPC CoreGraphics follows its existing version-mismatch path and exits with status 1 before `__CGSNewConnectionPort`; no crash/core diagnostic appears and protected hashes remain unchanged. The native syscall-295 probe still returns EBADF/no-SIGSYS PASS.
+
+Runtime `main` therefore advances to a standalone byte-level 600/0-to-545/0 compatibility-policy proof before any integrated reply normalization. No additional XNU code change is indicated.
