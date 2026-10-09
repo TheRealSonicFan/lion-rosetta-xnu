@@ -883,3 +883,12 @@ The concrete evolution is earlier in WindowServer server-port acquisition: Snow 
 The runtime investigation is therefore moving to a second read-only helper audit to prove the exact Snow service-name/bootstrap tuple and Lion replacement semantics before any process-local compatibility adapter is considered.
 
 The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
+
+
+## CGS server-port audit requires corrected exact-window pass
+
+The first runtime CGS server-port acquisition reports passed their version-1 validation gates, but report review exposed an analyzer-selection ambiguity rather than a kernel issue. The relevant CoreGraphics slices contain duplicate local `_lookupServerPort` symbols; version 1 kept only the last same-name address for exact-window emission. It also did not emit the complete Snow PPC `_CGSLookupSessionPort` helper that sits in the candidate session/root lookup cluster. Consequently, the version-1 reports do not yet prove the exact active WindowServer port-acquisition contract and do not justify a user-space lookup adapter.
+
+The runtime repository has corrected the analyzer to version 2. The next step is another read-only Snow Leopard/Lion pass that preserves all duplicate symbol addresses and captures the Snow `_CGSLookupSessionPort` and Lion `__CGSGetSessionPort` paths before any compatibility behavior is introduced.
+
+The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
