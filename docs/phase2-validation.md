@@ -903,3 +903,16 @@ Snow PPC CoreGraphics obtains its initial WindowServer session port from task sp
 The runtime repository is therefore advancing to a standalone PPC proof of that native Lion session-port acquisition sequence before any process-local CoreGraphics compatibility interposer is introduced. The existing `__CGSNewConnectionPort 0x7469/0x74cd` path remains downstream of the active failure.
 
 The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
+
+
+## Standalone translated-PPC CGS session-port proof passed
+
+The runtime repository has now completed the standalone Snow/Lion CGS session-port protocol proof without identifying any new kernel defect.
+
+On Snow Leopard 10.6.8, the corrected version-3 PPC probe successfully resolved `com.apple.windowserver.session`, validated the returned send right, and completed the unchanged DeathWatch request/reply `0x714c/0x71b0` with the expected `0x11/0x00` port descriptor.
+
+On Lion 10.7.5, translated PPC successfully used the native active WindowServer lookup contract (request `0x194`, target PID 0, zero UUID, flags 8), received a root-owned WindowServer service port, completed `GetSessionPort 0x7151/0x71b5`, validated the returned session send right, and completed the unchanged DeathWatch transaction. No new crash/core diagnostic was produced and protected hashes remained unchanged. The Lion runner ended `RESULT: CGS_SESSION_PORT_PROTOCOL_ADAPTER_PASS`.
+
+The runtime repository is therefore moving to a narrowly scoped process-local integration experiment for only the legacy `bootstrap_look_up("com.apple.windowserver.session")` call. That experiment will perform one Process Manager registration request and read the already-audited CoreGraphics connection slot, stopping before foreground/CPS transport. The known `0x729e -> 0x72a1` SetFrontProcess request-ID difference remains a later boundary and is not being adapted yet.
+
+The native syscall-295 probe still returns EBADF without SIGSYS. No additional XNU code change is indicated.
