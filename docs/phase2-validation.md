@@ -1021,3 +1021,12 @@ The runtime standalone CPS registration policy proof has now validated the exact
 Runtime `main` now advances to one exact live registration integration using the existing two-tuple CoreServices `mach_msg` interposer and a private request/reply buffer. Snow remains passthrough. Lion adaptation is predicate-gated to the first exact traced registration-only request and does not synthesize success if the native reply is not `0x7425/0x24/result 0`.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## CPS registration accepted; postidentity revalidation next
+
+The runtime live integration now confirms that Lion accepts the exact Snow-to-Lion CPS application-registration conversion. The translated process receives a successful native registration reply, the interposer returns the expected legacy-facing success reply, the previous registration error no longer appears, and GetProcessForPID remains successful with no new diagnostic and unchanged protected hashes.
+
+Runtime main now advances to a narrow postidentity revalidation: rebuild only the subject under the same exact executable basename and re-prove GetProcessPID plus TransformProcessType with the accepted compatibility dylibs unchanged. The foreground activation transaction remains held until that gate passes.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
