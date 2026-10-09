@@ -1003,3 +1003,12 @@ Snow PPC uses `0x7372 -> 0x73d6`, request bits `0x1513`, Mach option `0x3`, rece
 Runtime `main` now advances to a passive exact registration transport trace while retaining the already-proven session-port and server-version compatibility layers. The trace will observe the unchanged Snow `0x7372` request and raw Lion reply corresponding to the surviving `_RegisterApplication ... err=-304` before any registration adapter is designed.
 
 No additional XNU code change is indicated.
+
+
+## CPS legacy registration reply directly returns -304
+
+The runtime passive trace now resolves the surviving CPS registration diagnostic without ambiguity. Snow Leopard PPC sends legacy `0x7372`, receives `0x73d6` / `0x24` with result zero, and completes registration. Lion translated PPC sends the same legacy request and receives the same expected reply envelope with Mach success, but raw result `0xd0feffff`; under the reply NDR this decodes to `-304`, exactly matching the subsequent `_RegisterApplication` diagnostic. The restored default CoreGraphics connection remains nonzero and `GetProcessForPID` passes.
+
+Runtime `main` now advances to a standalone copied-buffer proof of the narrow `0x7372 -> 0x73c1`, request-size `+0x0c`, Lion-tail, and `0x7425 -> 0x73d6` reply-ID compatibility policy. That proof performs no Mach IPC and does not alter server state.
+
+The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU code change is indicated.
