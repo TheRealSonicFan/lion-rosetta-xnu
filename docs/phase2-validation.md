@@ -1012,3 +1012,12 @@ The runtime passive trace now resolves the surviving CPS registration diagnostic
 Runtime `main` now advances to a standalone copied-buffer proof of the narrow `0x7372 -> 0x73c1`, request-size `+0x0c`, Lion-tail, and `0x7425 -> 0x73d6` reply-ID compatibility policy. That proof performs no Mach IPC and does not alter server state.
 
 The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU code change is indicated.
+
+
+## CPS registration copied-buffer compatibility proof passed
+
+The runtime standalone CPS registration policy proof has now validated the exact Snow-to-Lion request/reply conversion without Mach IPC. For the registration-only subject, Snow's `0x7372` / `0x84` request is copied to a private buffer, converted to Lion native `0x73c1` / `0x90`, and extended by the proven 12-byte tail. The common request region changes by exactly one byte, the original source buffer remains unchanged, and a successful native `0x7425` reply converts back to legacy-facing `0x73d6` by changing exactly two reply-ID bytes while preserving result zero and NDR semantics.
+
+Runtime `main` now advances to one exact live registration integration using the existing two-tuple CoreServices `mach_msg` interposer and a private request/reply buffer. Snow remains passthrough. Lion adaptation is predicate-gated to the first exact traced registration-only request and does not synthesize success if the native reply is not `0x7425/0x24/result 0`.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
