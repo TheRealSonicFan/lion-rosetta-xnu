@@ -916,3 +916,14 @@ On Lion 10.7.5, translated PPC successfully used the native active WindowServer 
 The runtime repository is therefore moving to a narrowly scoped process-local integration experiment for only the legacy `bootstrap_look_up("com.apple.windowserver.session")` call. That experiment will perform one Process Manager registration request and read the already-audited CoreGraphics connection slot, stopping before foreground/CPS transport. The known `0x729e -> 0x72a1` SetFrontProcess request-ID difference remains a later boundary and is not being adapted yet.
 
 The native syscall-295 probe still returns EBADF without SIGSYS. No additional XNU code change is indicated.
+
+
+## CGS session-bootstrap integration advances past lookup but exits before identity return
+
+The runtime repository has now tested the exact process-local compatibility bridge for Snow PPC `bootstrap_look_up("com.apple.windowserver.session")`.
+
+On Lion 10.7.5, translated PPC successfully completed the native active WindowServer lookup, obtained a root-owned send right, completed `GetSessionPort 0x7151/0x71b5`, validated the returned session send right, and the integration interposer reported `ADAPTER_PASS`. The process then exited with status 1 before the post-`GetProcessForPID` marker. No new crash/core diagnostic was produced and protected hashes remained unchanged.
+
+The earlier runner label `GETPROCESSFORPID_ABORT_OR_CRASH` was overbroad for this exact result; runtime `main` now distinguishes the clean status-1 early exit. The next runtime stage is a behavior-preserving trace of the immediate downstream CoreGraphics Mach transactions: DeathWatch `0x714c/0x71b0` and `__CGSNewConnectionPort 0x7469/0x74cd`. No request adaptation is being introduced at this stage.
+
+The native syscall-295 probe remains healthy, returning EBADF without SIGSYS. No additional XNU code change is indicated.
