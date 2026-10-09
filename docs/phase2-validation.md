@@ -992,3 +992,14 @@ The runtime server-version compatibility integration has now passed its narrow c
 The same run still emitted `_RegisterApplication(), FAILED TO REGISTER PROCESS WITH CPS/CoreGraphics in WindowServer, err=-304` after the connection was established. The runtime boundary has therefore moved to CPS application registration. Runtime `main` now prepares a read-only differential of Snow PPC `__CPSRegisterWithServer -> __CGSCheckInApplication` versus Lion native `__CPSRegisterWithServer -> __CGSCreateApplication` before any new dynamic adapter is considered.
 
 The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS. No additional XNU code change is indicated.
+
+
+## CPS application-registration protocol differential confirmed
+
+The runtime read-only audit now proves that the active post-connection registration client contract changed between Snow Leopard and Lion. Snow Leopard i386/x86_64/PPC expose `__CGSCheckInApplication` and no `__CGSCreateApplication`; Lion i386/x86_64 expose `__CGSCreateApplication` and no legacy helper.
+
+Snow PPC uses `0x7372 -> 0x73d6`, request bits `0x1513`, Mach option `0x3`, receive size `0x2c`, and a variable request sized as aligned string plus `0x40`. Lion native uses `0x73c1 -> 0x7425` with the same reply-size family but a request extended to aligned string plus `0x4c`, adding a 12-byte tail.
+
+Runtime `main` now advances to a passive exact registration transport trace while retaining the already-proven session-port and server-version compatibility layers. The trace will observe the unchanged Snow `0x7372` request and raw Lion reply corresponding to the surviving `_RegisterApplication ... err=-304` before any registration adapter is designed.
+
+No additional XNU code change is indicated.
