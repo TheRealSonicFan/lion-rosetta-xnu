@@ -1055,3 +1055,12 @@ Runtime evidence now proves the exact SetFrontProcess compatibility policy. The 
 Runtime main now advances to a combined SetFront compatibility integration build using the same exact predicate and copied-buffer policy. No payload fields or nonzero native results are normalized.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## Integrated SetFrontProcess compatibility passed; GetFrontProcess verification next
+
+Runtime evidence now proves the exact SetFrontProcess ID-only policy in the normal combined compatibility build. The translated PPC process preserves the repaired registration and identity path, reaches the exact SetFront predicate, receives native Lion success for 0x72a1/0x7305, returns the legacy-facing 0x7302 success reply, and public SetFrontProcess returns 0 with no new diagnostic or protected-state change.
+
+Runtime main now advances to a narrow public GetFrontProcess validation using the same accepted compatibility dylibs unchanged. The new subject calls GetFrontProcess once after successful SetFrontProcess and requires the returned front PSN to match the already-proven process PSN exactly. GetCurrentProcess remains out of scope until this gate is reviewed.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
