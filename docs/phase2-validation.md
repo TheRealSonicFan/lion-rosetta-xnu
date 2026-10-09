@@ -1073,3 +1073,12 @@ Runtime evidence now proves that the restored foreground-selection state is exte
 Runtime main now advances to a narrow GetCurrentProcess validation under the same accepted compatibility stack. The new subject re-proves the complete registration/identity/foreground sequence, then calls GetCurrentProcess exactly once and requires its PSN to match the already-established process PSN. LSDONOTABORTIFNOASN remains unset; no abort suppression or GetCurrentProcess-specific adapter is introduced.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## Historic GetCurrentProcess boundary closed; CreateNewWindow next
+
+Runtime evidence now proves that the original translated-PPC GetCurrentProcess self-abort is no longer present under the restored registration/foreground stack. After successful registration, PID identity, foreground conversion, SetFrontProcess, and GetFrontProcess, GetCurrentProcess returns success and exactly the same PSN already established for the process. No abort suppression, LSDONOTABORTIFNOASN override, or GetCurrentProcess-specific adapter is required.
+
+Runtime main now advances to a narrow CreateNewWindow validation using the same accepted compatibility dylibs unchanged. The new subject creates one small document window, requires a nonzero WindowRef, disposes it immediately, and stops before show/select/visibility or event-loop work.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
