@@ -1064,3 +1064,12 @@ Runtime evidence now proves the exact SetFrontProcess ID-only policy in the norm
 Runtime main now advances to a narrow public GetFrontProcess validation using the same accepted compatibility dylibs unchanged. The new subject calls GetFrontProcess once after successful SetFrontProcess and requires the returned front PSN to match the already-proven process PSN exactly. GetCurrentProcess remains out of scope until this gate is reviewed.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## GetFrontProcess validation passed; historic GetCurrentProcess boundary next
+
+Runtime evidence now proves that the restored foreground-selection state is externally visible through the public Process Manager query: after the accepted registration and SetFrontProcess compatibility path, GetFrontProcess returns success and the returned front PSN exactly matches the current translated PPC process PSN. No new diagnostic or protected-state change is observed.
+
+Runtime main now advances to a narrow GetCurrentProcess validation under the same accepted compatibility stack. The new subject re-proves the complete registration/identity/foreground sequence, then calls GetCurrentProcess exactly once and requires its PSN to match the already-established process PSN. LSDONOTABORTIFNOASN remains unset; no abort suppression or GetCurrentProcess-specific adapter is introduced.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
