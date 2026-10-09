@@ -1037,3 +1037,12 @@ The syscall-295 probe remains healthy, and no additional XNU code change is indi
 Runtime evidence now proves that the accepted CPS application-registration repair survives the next Process Manager checkpoints: GetProcessPID returns the exact current PID and TransformProcessType to foreground returns success. No second registration call or new diagnostic is observed, and protected hashes remain unchanged.
 
 Runtime main now advances to one passive live SetFrontProcess transport trace with the full accepted registration stack active. The translated Snow PPC client is expected to expose its legacy 0x729e/0x7302 transaction; the stage does not rewrite it to Lion native 0x72a1/0x7305. The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## Live SetFrontProcess transport reached; ID-policy proof next
+
+Runtime evidence now proves that the restored translated PPC process reaches the legacy Snow SetFrontProcess Mach transaction on Lion. Snow returns success for 0x729e/0x7302; Lion returns Mach success and a normal 0x7302 reply carrying -304, which propagates to public SetFrontProcess. The earlier connection and registration boundaries remain repaired.
+
+Runtime main now advances to an exact copied-buffer protocol proof that changes only the private request ID from 0x729e to Lion-native 0x72a1, requires native 0x7305/result 0, and changes only the private reply ID back to 0x7302. No payload or server result normalization is permitted.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
