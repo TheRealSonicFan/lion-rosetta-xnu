@@ -974,3 +974,12 @@ The runtime passive trace now confirms the remaining pre-NewConnection failure m
 After the Lion 600/0 reply, restored Snow PPC CoreGraphics follows its existing version-mismatch path and exits with status 1 before `__CGSNewConnectionPort`; no crash/core diagnostic appears and protected hashes remain unchanged. The native syscall-295 probe still returns EBADF/no-SIGSYS PASS.
 
 Runtime `main` therefore advances to a standalone byte-level 600/0-to-545/0 compatibility-policy proof before any integrated reply normalization. No additional XNU code change is indicated.
+
+
+## Standalone CGS server-version normalization proof passed
+
+The runtime standalone policy proof has now validated the exact compatibility transformation without involving the integrated CoreGraphics client. Snow PPC reproduced the `0x7148 -> 0x71ac` reply with decoded version 545/0. Lion translated PPC reproduced the same reply shape with decoded version 600/0, then an NDR-aware copied-buffer normalization changed only the version region to 545/0, changed exactly one byte, preserved descriptor/auxiliary/flags outputs, and changed no byte outside offsets `0x30..0x37`. The proof exited successfully with no new diagnostic and unchanged protected hashes.
+
+Runtime `main` now advances to one registration-only integration using the existing CoreServices `mach_msg` interposer with an exact, predicate-gated live `0x71ac` normalization. Snow remains passthrough. The test asks only whether the restored client then reaches `__CGSNewConnectionPort 0x7469` and publishes a nonzero default connection. The known later `0x729e` foreground/CPS mismatch remains deliberately out of scope.
+
+Syscall 295 remains healthy, and no additional XNU code change is indicated.
