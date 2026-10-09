@@ -1046,3 +1046,12 @@ Runtime evidence now proves that the restored translated PPC process reaches the
 Runtime main now advances to an exact copied-buffer protocol proof that changes only the private request ID from 0x729e to Lion-native 0x72a1, requires native 0x7305/result 0, and changes only the private reply ID back to 0x7302. No payload or server result normalization is permitted.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## SetFrontProcess protocol proof passed; integration build next
+
+Runtime evidence now proves the exact SetFrontProcess compatibility policy. The translated PPC client presents the traced legacy 0x729e request after one accepted CPS registration transaction; the compatibility layer changes only the private request ID to Lion-native 0x72a1, receives native 0x7305/result 0, changes only the private reply ID back to 0x7302, and the public SetFrontProcess call returns success. Snow remains strict passthrough.
+
+Runtime main now advances to a combined SetFront compatibility integration build using the same exact predicate and copied-buffer policy. No payload fields or nonzero native results are normalized.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
