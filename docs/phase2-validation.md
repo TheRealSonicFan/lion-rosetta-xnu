@@ -892,3 +892,14 @@ The first runtime CGS server-port acquisition reports passed their version-1 val
 The runtime repository has corrected the analyzer to version 2. The next step is another read-only Snow Leopard/Lion pass that preserves all duplicate symbol addresses and captures the Snow `_CGSLookupSessionPort` and Lion `__CGSGetSessionPort` paths before any compatibility behavior is introduced.
 
 The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
+
+
+## CGS server-port v2 audit resolves the user-space session-port contract
+
+The corrected runtime version-2 CGS server-port audit has passed on Snow Leopard and Lion and resolves the duplicate-symbol ambiguity without identifying a new kernel defect.
+
+Snow PPC CoreGraphics obtains its initial WindowServer session port from task special port 4 through ordinary `bootstrap_look_up("com.apple.windowserver.session")`, with the legacy active/root lookup as fallback. Lion native CoreGraphics instead routes `_CGSLookupSessionPort` through `_getSessionPort(1)`: it obtains the active root WindowServer service using the Lion `bootstrap_look_up2` contract with target PID 0 and privileged-server flag 8, then sends `__CGSGetSessionPort` request/reply `0x7151/0x71b5` and returns a one-descriptor send right. The subsequent DeathWatch request/reply remains `0x714c/0x71b0`.
+
+The runtime repository is therefore advancing to a standalone PPC proof of that native Lion session-port acquisition sequence before any process-local CoreGraphics compatibility interposer is introduced. The existing `__CGSNewConnectionPort 0x7469/0x74cd` path remains downstream of the active failure.
+
+The native syscall-295 probe remains healthy. No additional XNU code change is indicated.
