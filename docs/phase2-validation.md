@@ -956,3 +956,12 @@ The first read-only Snow/Lion `_connectAndCheck` differential passed and confirm
 Runtime analyzer version 1 did not emit the private server-version MIG client itself, so runtime `main` now advances the same read-only audit to version 2 and exact-targets that helper plus `_CGSGetCoreGraphicsVersion`. No PPC execution or new compatibility behavior is authorized until the resulting Snow/Lion wire contracts are compared.
 
 No additional XNU code change is indicated.
+
+
+## CGS server-version transport is the next user-space discriminator
+
+The corrected runtime analyzer v2 shows that Snow PPC and Lion native CoreGraphics use the same visible private server-version MIG envelope before NewConnection: request `0x7148`, reply `0x71ac`, request bits `0x1513`, `mach_msg` options `0x3`, send size `0x24`, and receive size `0x48`. Both clients include NDR/endian-aware reply handling.
+
+The important static difference is framework version provenance: Snow Leopard CoreGraphics is 545.0.0 and Lion CoreGraphics is 600.0.0. Snow PPC `_connectAndCheck` compares server-returned version values to its local values and can return `0x3f0`; Snow PPC `_CGSServerPort` handles `0x3f0` with `exit(1)`, matching the currently observed translated-PPC stop after the session-port adapter and before NewConnection.
+
+Runtime `main` therefore advances to a passive `0x7148/0x71ac` trace-v2 with a Snow positive control and exactly one Lion run. No reply rewrite or defaults override has been introduced. Syscall 295 remains healthy, and no additional XNU code change is indicated.
