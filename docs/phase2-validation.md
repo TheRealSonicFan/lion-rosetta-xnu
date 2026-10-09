@@ -947,3 +947,12 @@ Snow Leopard registration reaches `__CGSNewConnectionPort` request `0x7469`, rec
 The runtime repository is therefore moving to a read-only differential audit of the internal CoreGraphics `_connectAndCheck` helper executed inside `_CGSServerPort` after the lookup and before selected-port publication. No new runtime request adaptation has been introduced, and the native syscall-295 probe remains healthy with EBADF/no-SIGSYS.
 
 No additional XNU code change is indicated.
+
+
+## Connect-and-check audit localizes first unresolved remote helper
+
+The first read-only Snow/Lion `_connectAndCheck` differential passed and confirms that the translated-PPC failure remains entirely in user-space CoreGraphics after a valid Lion session port is returned. Both the Snow PPC and Lion native paths obtain their local CoreGraphics version and PID, then call private `__CGSGetCoreGraphicsServerVersion` before publishing the selected server port. A nonzero return from that helper prevents progress to `__CGSNewConnectionPort`.
+
+Runtime analyzer version 1 did not emit the private server-version MIG client itself, so runtime `main` now advances the same read-only audit to version 2 and exact-targets that helper plus `_CGSGetCoreGraphicsVersion`. No PPC execution or new compatibility behavior is authorized until the resulting Snow/Lion wire contracts are compared.
+
+No additional XNU code change is indicated.
