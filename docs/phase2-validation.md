@@ -1082,3 +1082,12 @@ Runtime evidence now proves that the original translated-PPC GetCurrentProcess s
 Runtime main now advances to a narrow CreateNewWindow validation using the same accepted compatibility dylibs unchanged. The new subject creates one small document window, requires a nonzero WindowRef, disposes it immediately, and stops before show/select/visibility or event-loop work.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+
+## CreateNewWindow now localizes to distributed-notifications bootstrap lookup
+
+Runtime evidence now reaches CreateNewWindow after the complete restored registration/identity/foreground sequence, but the API does not return on Lion. Immediately after the pre-CreateNewWindow milestone, the translated Snow PPC client performs bootstrap_look_up2 for com.apple.distributed_notifications.2 with pid 0 and flags 8. Snow returns success and a live service port; Lion's unchanged legacy PPC lookup returns -304 and a null port. HIToolbox then reports framework-resource failure, damage code -4960 with TTheme instance 0, and aborts. Protected hashes remain unchanged.
+
+Runtime main now advances to a standalone distributed-notifications bootstrap compatibility protocol proof that reuses the already-proven Lion launchd 0x194/0x1f8 lookup formatter for exactly that service tuple. No CreateNewWindow retry or window-server adaptation is authorized until the standalone lookup result is reviewed.
+
+The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
