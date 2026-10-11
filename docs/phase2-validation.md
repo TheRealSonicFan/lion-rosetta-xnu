@@ -1188,3 +1188,12 @@ The runtime standalone NewWindow compatibility proof has now passed. For the exa
 Runtime main therefore advances to docs/process-manager-createwindow-cgs-newwindow-compat-integration-experiment.md in lion-rosetta-runtime. That stage performs exactly one live native-ID NewWindow request inside the already accepted user-space compatibility stack and explicitly preserves any nonzero native server result.
 
 This remains a user-space CoreGraphics/MIG compatibility boundary. No XNU code change, rebuild, or reboot is indicated.
+
+
+## Native NewWindow success reached; post-NewWindow runtime CGS boundary
+
+The latest runtime integration proves that the exact copied-buffer NewWindow ID conversion reaches a native Lion success reply in the restored translated-PPC stack. The adapter changes only request ID `0x7394 -> 0x739a`, receives native `0x73fe` with reply size `0x38` and result 0, changes only the reply ID back to `0x73f8`, and the legacy-facing client accepts that success shape.
+
+The public `CreateNewWindow` call still does not return because additional CoreGraphics work immediately after the successful NewWindow transaction now exposes failures in `CGSSetWindowToReleaseBackingOnOrderOut`, `CGSSetWindowOpacity`, `CGSGetDisplayBounds`, and `CGSShapeWindow`. Protected hashes remain unchanged and the syscall-295 probe still reaches the compatibility front-end and returns EBADF without SIGSYS.
+
+Runtime main therefore moves to a static Snow-PPC versus Lion-i386 audit of those four post-NewWindow CoreGraphics helper contracts before any further live adapter work. This evidence continues to point to runtime/user-space CoreGraphics/MIG compatibility rather than XNU. No kernel source change, rebuild, or reboot is indicated.
