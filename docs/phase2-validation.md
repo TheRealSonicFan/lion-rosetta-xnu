@@ -1236,3 +1236,12 @@ The runtime focused opacity audit now passes on Snow Leopard PPC and Lion i386. 
 The Snow terminate IDs collide numerically with Lion create IDs, so no opacity adapter is authorized from static evidence alone. Runtime main advances to a passive create/terminate alpha-plane transport trace that keeps the accepted NewWindow and release-backing adapters unchanged and rewrites no opacity traffic.
 
 This remains a user-space CoreGraphics/generated-MIG boundary. Syscall 295 remains a safety gate rather than the defect under investigation. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Opacity create-alpha live trace isolates user-space MIG receive boundary
+
+The Snow and Lion passive opacity alpha-plane runs both selected the create-alpha helper. Snow's legacy `0x724f -> 0x72b3 / 0x24` transaction returned result 0 and completed CreateNewWindow through M24. Lion reached the same legacy `0x724f` request after native-success NewWindow and release-backing compatibility transactions, then returned `0x10004004/MACH_RCV_TOO_LARGE`. The static Lion-native create-alpha pair remains `0x7250/0x72b4`.
+
+Runtime `main` therefore advances only to a standalone copied-buffer proof of the create-alpha ID mapping `0x724f -> 0x7250` and `0x72b4 -> 0x72b3`; that proof sends no Mach IPC and must preserve every non-ID byte and result value. Syscall 295 continues to pass the established EBADF/no-SIGSYS gate, and protected hashes remained unchanged in the trace run.
+
+This remains a user-space CoreGraphics/generated-MIG compatibility boundary. No XNU source change, rebuild, or reboot is indicated.
