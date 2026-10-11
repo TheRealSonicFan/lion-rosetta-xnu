@@ -1254,3 +1254,12 @@ The standalone create-alpha compatibility proof now passes with no Mach IPC. It 
 Runtime `main` advances only to one exact live create-alpha integration while keeping the accepted NewWindow and release-backing adapters unchanged. The PPC `0x2c` receive size remains untouched; terminate-alpha, display-bounds, and ShapeWindow remain out of scope until that live result is reviewed.
 
 Syscall 295 continues to pass the EBADF/no-SIGSYS safety gate. This remains a user-space CoreGraphics/generated-MIG compatibility boundary, so no XNU source change, rebuild, or reboot is indicated.
+
+
+## CreateNewWindow construction gate passed; next boundary remains user-space window use
+
+The restored-stack Lion run now completes the exact opacity create-alpha ID conversion with native Mach success and result 0, after the already accepted NewWindow and release-backing conversions. Public `CreateNewWindow` returns 0 with a nonzero WindowRef, immediate disposal completes, the PPC process exits 0, no new crash/core diagnostic is created, and protected hashes remain unchanged.
+
+The same run still logs several CoreGraphics diagnostics during window construction, including display-bounds, ShapeWindow, backing-map/lock, and display-color-space errors. Because these no longer prevent the public API from succeeding, they are not evidence for an additional kernel or syscall defect and are not authorized compatibility targets in isolation.
+
+Runtime validation therefore moves one application operation forward to `SetWindowTitleWithCFString` under the unchanged accepted compatibility stack. Syscall 295 remains EBADF/no-SIGSYS. No XNU source change, rebuild, or reboot is indicated.
