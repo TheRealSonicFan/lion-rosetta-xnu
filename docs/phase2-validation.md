@@ -1263,3 +1263,10 @@ The restored-stack Lion run now completes the exact opacity create-alpha ID conv
 The same run still logs several CoreGraphics diagnostics during window construction, including display-bounds, ShapeWindow, backing-map/lock, and display-color-space errors. Because these no longer prevent the public API from succeeding, they are not evidence for an additional kernel or syscall defect and are not authorized compatibility targets in isolation.
 
 Runtime validation therefore moves one application operation forward to `SetWindowTitleWithCFString` under the unchanged accepted compatibility stack. Syscall 295 remains EBADF/no-SIGSYS. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Post-CreateNewWindow title boundary is FontServer bootstrap
+
+The first restored-stack operation after successful CreateNewWindow construction is now localized. Snow Leopard resolves the ordinary PPC `bootstrap_look_up("com.apple.FontServer")` during `SetWindowTitleWithCFString` with `kr=0` and a nonzero port, after which the title API returns 0. Lion reaches the same title boundary but the untouched legacy lookup returns `-304/MIG_BAD_ARGUMENTS` with a zero port before a later fifth distributed-notification request is rejected by the intentionally exact-four broker. Repeated FontServer lookups then fail and CoreText reports invalid font-server IPC destinations.
+
+The next runtime step is a standalone Lion-format launchd lookup discriminator for exactly `com.apple.FontServer`; no window-title rerun, notification-policy broadening, or FontServer RPC is authorized until that result is reviewed. Syscall 295 remains EBADF/no-SIGSYS and protected kernel/runtime identities remain unchanged. No XNU source change, rebuild, or reboot is indicated.
