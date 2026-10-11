@@ -1218,3 +1218,12 @@ Static Lion i386 identifies native release-backing request/reply IDs `0x724c/0x7
 The runtime standalone policy proof now validates the exact release-backing generated-MIG ID translation with no Mach IPC: `0x724b -> 0x724c` changes exactly one request byte with zero request-body/source changes, and `0x72b0 -> 0x72af` changes exactly one reply byte with zero reply-body changes. Both success result 0 and a modeled nonzero `-304` result are preserved unchanged. The Snow control, Lion syscall-295 safety probe, protected-hash checks, and no-new-diagnostic gate all pass.
 
 Runtime main therefore advances to one exact live release-backing compatibility integration while retaining the already accepted NewWindow adapter. This remains a user-space CoreGraphics/generated-MIG compatibility experiment. Syscall 295 remains healthy and only serves as a safety gate. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Release-backing live success moves boundary to opacity
+
+The runtime live release-backing compatibility integration now reaches a native Lion success reply. The exact copied request changes only generated-MIG ID `0x724b -> 0x724c`; Lion returns `0x72b0 / 0x24 / result 0`; the copied legacy-facing reply changes only `0x72b0 -> 0x72af`; and the release-backing adapter reports PASS. The legacy-facing transport accepts the reply.
+
+The translated PPC subject still does not return from `CreateNewWindow`. The first subsequent diagnostic is now `CGSSetWindowOpacity` receive-too-large, followed later by display-bounds and ShapeWindow diagnostics. Runtime main therefore advances to a static Snow-PPC/Lion-i386 audit of the opacity wrapper's `__CGSCreateWindowAlphaPlane` and `__CGSTerminateWindowAlphaPlane` generated-MIG clients before any further live transport change.
+
+The syscall-295 probe remains healthy (`EBADF`, no SIGSYS), protected hashes remain unchanged, and no evidence points to a new kernel defect. No XNU source change, rebuild, or reboot is indicated.
