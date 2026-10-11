@@ -1120,3 +1120,11 @@ The exact process-local Snow `Extras.rsrc` fallback has advanced the restored PP
 
 Runtime work now pauses policy expansion and captures the exact fourth notification dictionary first. The new diagnostic broker keeps the already-reviewed first three registrations intact, records the fourth request's full binary plist/XML, and intentionally returns the same name rejection. The later dock-server boundary is not changed in this stage. Syscall-295 remains a safety gate only; no XNU code change, kernel rebuild, or reboot is indicated.
 
+## Exact Extras fallback advances past TTheme; fourth notification request exposed
+
+The exact Snow Leopard 10.6.8 `Extras.rsrc` fallback experiment confirms that the process-local resource compatibility path works on Lion. The staged resource hash remained the reviewed `a0866d6cf2d48fac7787e8cf9e90264071642c0d39aa809636e7d478016a9197`; the restored PPC HIToolbox exact `com.apple.HIToolbox` / `Extras` / `rsrc` lookup was reached twice; Lion's original CFBundle lookup returned NULL both times; and the process-local fallback returned NONNULL both times. The prior HIToolbox resource warning and TTheme `-4960` abort did not recur.
+
+Execution then crossed a newly reachable fourth legacy distributed-notification request. The exact-registration broker had accepted the three previously reviewed registrations, but rejected request 4 with status 25, which is its deliberate unreviewed-name rejection. The subject subsequently reached `M21_AFTER_CreateNewWindow` and returned `CreateNewWindow=-304`; a later `com.apple.dock.server` passthrough lookup also returned `-304`. Protected hashes remained unchanged, and the syscall-295 routing probe remains healthy.
+
+The next runtime gate is `lion-rosetta-runtime/docs/process-manager-createwindow-post-extras-distributed-notification-schema-audit.md`. That diagnostic preserves the accepted first three native registrations and exact Snow `Extras.rsrc` fallback, captures the full fourth request dictionary, and intentionally continues to reject it. Do not broaden the notification allowlist or alter the downstream dock-server/CGS path until that request has been reviewed. No XNU code change, rebuild, or reboot is indicated.
+
