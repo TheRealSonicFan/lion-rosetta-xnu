@@ -1179,3 +1179,12 @@ The runtime passive trace has now dynamically reproduced the exact Snow PPC inli
 This is not a syscall-295, VM, Rosetta execution, or Mach transport failure. Together with the static Lion-native 0x739a/0x73fe contract, it isolates another generated-MIG user-space compatibility boundary. Runtime main advances to docs/process-manager-createwindow-cgs-newwindow-compat-protocol-adapter-experiment.md in lion-rosetta-runtime, a standalone no-Mach-IPC copied-buffer proof of the narrow request/reply ID conversion before any live adapter is integrated.
 
 No XNU code change, rebuild, or reboot is indicated.
+
+
+## CGS NewWindow copied-buffer policy proof passes; live runtime integration is next
+
+The runtime standalone NewWindow compatibility proof has now passed. For the exact 0x68/0x40 transaction, the private request copy changes only generated-MIG request ID 0x7394 -> 0x739a with one changed byte, zero request-body changes, and zero source-buffer changes. Both accepted native reply forms map only 0x73fe -> 0x73f8 with one changed byte and zero reply-body changes; the modeled 0x24 error remains decoded -304 and is not normalized. Snow control, the syscall-295 EBADF/no-SIGSYS gate, diagnostics, and protected hashes all pass.
+
+Runtime main therefore advances to docs/process-manager-createwindow-cgs-newwindow-compat-integration-experiment.md in lion-rosetta-runtime. That stage performs exactly one live native-ID NewWindow request inside the already accepted user-space compatibility stack and explicitly preserves any nonzero native server result.
+
+This remains a user-space CoreGraphics/MIG compatibility boundary. No XNU code change, rebuild, or reboot is indicated.
