@@ -1162,3 +1162,11 @@ The runtime Dock-aware CreateNewWindow integration now confirms that the exact `
 The next failure occurs after the Dock lookup: CoreGraphics reports `MIG: server type check failure: CGSNewWindowWithOpaqueShape: Cannot create window`, and public `CreateNewWindow` returns `-304` with no WindowRef. Runtime work therefore advances to the static read-only `docs/process-manager-createwindow-cgs-newwindow-protocol-audit.md` in `lion-rosetta-runtime` to compare Snow PPC and Lion i386 CoreGraphics client contracts before any transport adapter is considered.
 
 The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS with the established kernel identity. This evidence does not indicate an XNU defect; no kernel code change, rebuild, or reboot is part of the next stage.
+
+## CGS NewWindow protocol differential remains a user-space boundary
+
+The runtime static NewWindow audit now passes on Snow Leopard PPC and Lion i386. The generated `__CGSCreateWindowInline` clients retain the same visible message construction, variable send-size formula, Mach options, receive size, reply-size handling, and NDR-aware decoding, but the MIG routine IDs changed from Snow `0x7394/0x73f8` to Lion `0x739a/0x73fe`.
+
+Runtime work therefore advances to a passive exact transport trace of the unchanged Snow PPC `0x7394` request on Snow and then Lion under the already accepted compatibility stack. No NewWindow ID conversion is integrated at this stage.
+
+The syscall-295 compatibility path remains an established safety gate only. This evidence does not indicate an XNU defect; no kernel code change, rebuild, or reboot is part of the next experiment.
