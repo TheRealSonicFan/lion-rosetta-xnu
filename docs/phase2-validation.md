@@ -1270,3 +1270,10 @@ Runtime validation therefore moves one application operation forward to `SetWind
 The first restored-stack operation after successful CreateNewWindow construction is now localized. Snow Leopard resolves the ordinary PPC `bootstrap_look_up("com.apple.FontServer")` during `SetWindowTitleWithCFString` with `kr=0` and a nonzero port, after which the title API returns 0. Lion reaches the same title boundary but the untouched legacy lookup returns `-304/MIG_BAD_ARGUMENTS` with a zero port before a later fifth distributed-notification request is rejected by the intentionally exact-four broker. Repeated FontServer lookups then fail and CoreText reports invalid font-server IPC destinations.
 
 The next runtime step is a standalone Lion-format launchd lookup discriminator for exactly `com.apple.FontServer`; no window-title rerun, notification-policy broadening, or FontServer RPC is authorized until that result is reviewed. Syscall 295 remains EBADF/no-SIGSYS and protected kernel/runtime identities remain unchanged. No XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer standalone launchd lookup passes; live title integration next
+
+The standalone translated-PPC `com.apple.FontServer` discriminator now succeeds with the exact Lion launchd request schema: request ID `0x194`, send size `0xbc`, PID 0, zero UUID, flags 0, followed by complex reply ID `0x1f8`, descriptor count 1, and a valid send right. Snow Leopard's ordinary legacy lookup also succeeds with a nonzero port. No new diagnostic or protected-state change occurred, and syscall 295 remains EBADF/no-SIGSYS.
+
+Runtime validation therefore moves to one exact user-space FontServer lookup integration inside the existing `bootstrap_look_up` interposer, preserving all accepted CreateNewWindow compatibility and the exact-four notification broker unchanged. The fifth notification remains deliberately unaccepted until the FontServer live integration establishes whether it is truly the next boundary. No XNU source change, rebuild, or reboot is indicated.
