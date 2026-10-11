@@ -1245,3 +1245,12 @@ The Snow and Lion passive opacity alpha-plane runs both selected the create-alph
 Runtime `main` therefore advances only to a standalone copied-buffer proof of the create-alpha ID mapping `0x724f -> 0x7250` and `0x72b4 -> 0x72b3`; that proof sends no Mach IPC and must preserve every non-ID byte and result value. Syscall 295 continues to pass the established EBADF/no-SIGSYS gate, and protected hashes remained unchanged in the trace run.
 
 This remains a user-space CoreGraphics/generated-MIG compatibility boundary. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Opacity create-alpha copied-buffer proof passed; live user-space integration next
+
+The standalone create-alpha compatibility proof now passes with no Mach IPC. It proves the exact copied-buffer mapping `0x724f -> 0x7250` for the request and `0x72b4 -> 0x72b3` for the reply, with exactly one changed byte in each message, zero body/source changes, and preservation of both result 0 and a modeled nonzero result.
+
+Runtime `main` advances only to one exact live create-alpha integration while keeping the accepted NewWindow and release-backing adapters unchanged. The PPC `0x2c` receive size remains untouched; terminate-alpha, display-bounds, and ShapeWindow remain out of scope until that live result is reviewed.
+
+Syscall 295 continues to pass the EBADF/no-SIGSYS safety gate. This remains a user-space CoreGraphics/generated-MIG compatibility boundary, so no XNU source change, rebuild, or reboot is indicated.
