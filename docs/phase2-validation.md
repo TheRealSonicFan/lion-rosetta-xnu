@@ -1108,3 +1108,9 @@ Runtime evidence and the historical resource audits now point to a user-space HI
 
 The syscall-295 probe remains healthy. No additional XNU code change, kernel rebuild, or reboot is indicated.
 
+## Live HIToolbox Extras lookup confirmed; exact user-space resource fallback next
+
+The runtime live trace has now confirmed that the remaining CreateNewWindow abort is not a kernel boundary. The same restored Snow PPC HIToolbox callsite requests `com.apple.HIToolbox` / `Extras` / `rsrc` on both systems. Snow resolves that request to its `Extras.rsrc` and completes CreateNewWindow; Lion returns NULL immediately before the HIToolbox framework-resource warning and TTheme `-4960` abort. The already-proven distributed-notification registrations still complete with zero rejects, and the syscall-295 compatibility probe remains healthy.
+
+Runtime main now advances to an exact, process-local user-space resource fallback experiment using only the SHA-pinned Snow Leopard 10.6.8 `Extras.rsrc`, copied from the user's own Snow installation and never installed into Lion's system framework. The forced external-resource path must pass on Snow before a single Lion fallback run is attempted. Lion's `Extras2.rsrc` is not considered equivalent. No additional XNU code change, kernel rebuild, or reboot is indicated.
+
