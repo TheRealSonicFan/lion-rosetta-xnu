@@ -1197,3 +1197,10 @@ The latest runtime integration proves that the exact copied-buffer NewWindow ID 
 The public `CreateNewWindow` call still does not return because additional CoreGraphics work immediately after the successful NewWindow transaction now exposes failures in `CGSSetWindowToReleaseBackingOnOrderOut`, `CGSSetWindowOpacity`, `CGSGetDisplayBounds`, and `CGSShapeWindow`. Protected hashes remain unchanged and the syscall-295 probe still reaches the compatibility front-end and returns EBADF without SIGSYS.
 
 Runtime main therefore moves to a static Snow-PPC versus Lion-i386 audit of those four post-NewWindow CoreGraphics helper contracts before any further live adapter work. This evidence continues to point to runtime/user-space CoreGraphics/MIG compatibility rather than XNU. No kernel source change, rebuild, or reboot is indicated.
+
+
+## Post-NewWindow CGS static differential passed; release-backing trace next
+
+The runtime static audit now compares the four CoreGraphics helpers exposed immediately after the successful NewWindow compatibility transaction. The first live helper, `CGSSetWindowToReleaseBackingOnOrderOut`, differs only in generated-MIG IDs between Snow PPC and Lion i386: `0x724b/0x72af` versus `0x724c/0x72b0`, with the same `0x1513` bits, `0x3` Mach option, `0x28/0x2c` send/receive sizes, and `0x24` reply geometry. Later ShapeWindow helpers also show ID movement, but they are not yet being changed.
+
+Runtime main therefore advances to a passive, exact release-backing transport trace under the already accepted NewWindow adapter. No release-backing translation is integrated in this stage. Syscall 295 remains a safety gate only, and the evidence continues to point to user-space CoreGraphics/MIG compatibility rather than XNU. No kernel source change, rebuild, or reboot is indicated.
