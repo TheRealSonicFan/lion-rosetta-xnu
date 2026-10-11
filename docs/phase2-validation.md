@@ -1211,3 +1211,10 @@ Runtime main therefore advances to a passive, exact release-backing transport tr
 The runtime passive trace now reproduces the first post-NewWindow CoreGraphics boundary exactly. Snow PPC sends release-backing request `0x724b` and receives `0x72af / 0x24 / result 0`; Lion translated PPC sends the same legacy ID and envelope, receives Mach success plus `0x72af / 0x24`, but the returned raw result `0xd0feffff` decodes to `-304`. The already accepted NewWindow adapter returns native success before this point, syscall 295 still reaches the compatibility front-end and returns EBADF without SIGSYS, and protected system hashes remain unchanged.
 
 Static Lion i386 identifies native release-backing request/reply IDs `0x724c/0x72b0` with the same visible message geometry. Runtime main therefore advances to a standalone no-Mach-IPC copied-buffer proof of only `0x724b -> 0x724c` and `0x72b0 -> 0x72af`. This continues to localize the defect to user-space CoreGraphics/generated-MIG compatibility. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Release-backing copied-buffer policy passed; live user-space integration next
+
+The runtime standalone policy proof now validates the exact release-backing generated-MIG ID translation with no Mach IPC: `0x724b -> 0x724c` changes exactly one request byte with zero request-body/source changes, and `0x72b0 -> 0x72af` changes exactly one reply byte with zero reply-body changes. Both success result 0 and a modeled nonzero `-304` result are preserved unchanged. The Snow control, Lion syscall-295 safety probe, protected-hash checks, and no-new-diagnostic gate all pass.
+
+Runtime main therefore advances to one exact live release-backing compatibility integration while retaining the already accepted NewWindow adapter. This remains a user-space CoreGraphics/generated-MIG compatibility experiment. Syscall 295 remains healthy and only serves as a safety gate. No XNU source change, rebuild, or reboot is indicated.
