@@ -1154,3 +1154,11 @@ The standalone `com.apple.dock.server` lookup discriminator has now passed. Snow
 This closes the Dock lookup itself as another user-space launchd/bootstrap request-layout mismatch. Runtime `main` now advances to `docs/process-manager-createwindow-dockserver-bootstrap-compat-integration-experiment.md`, which adds only this exact service-name adaptation to an opt-in v2 build of the existing CGS bootstrap interposer, gates it with a Snow Leopard full CreateNewWindow passthrough control, and then performs one Lion CreateNewWindow run with the already accepted four-registration notification broker and exact Snow `Extras.rsrc` fallback unchanged.
 
 No XNU code change, rebuild, or reboot is indicated.
+
+## Dock bootstrap integration accepted; CGS NewWindow remains user-space boundary
+
+The runtime Dock-aware CreateNewWindow integration now confirms that the exact `com.apple.dock.server` launchd-layout adaptation works inside the restored translated-PPC stack: Lion returns the expected service send right and the runtime interposer reports adapter PASS. The previously accepted four distributed-notification registrations and exact Snow HIToolbox resource fallback remain intact.
+
+The next failure occurs after the Dock lookup: CoreGraphics reports `MIG: server type check failure: CGSNewWindowWithOpaqueShape: Cannot create window`, and public `CreateNewWindow` returns `-304` with no WindowRef. Runtime work therefore advances to the static read-only `docs/process-manager-createwindow-cgs-newwindow-protocol-audit.md` in `lion-rosetta-runtime` to compare Snow PPC and Lion i386 CoreGraphics client contracts before any transport adapter is considered.
+
+The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS with the established kernel identity. This evidence does not indicate an XNU defect; no kernel code change, rebuild, or reboot is part of the next stage.
