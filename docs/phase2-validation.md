@@ -1227,3 +1227,12 @@ The runtime live release-backing compatibility integration now reaches a native 
 The translated PPC subject still does not return from `CreateNewWindow`. The first subsequent diagnostic is now `CGSSetWindowOpacity` receive-too-large, followed later by display-bounds and ShapeWindow diagnostics. Runtime main therefore advances to a static Snow-PPC/Lion-i386 audit of the opacity wrapper's `__CGSCreateWindowAlphaPlane` and `__CGSTerminateWindowAlphaPlane` generated-MIG clients before any further live transport change.
 
 The syscall-295 probe remains healthy (`EBADF`, no SIGSYS), protected hashes remain unchanged, and no evidence points to a new kernel defect. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Opacity alpha-plane static differential passed; passive trace next
+
+The runtime focused opacity audit now passes on Snow Leopard PPC and Lion i386. Beneath `CGSSetWindowOpacity`, create-alpha shifts from Snow `0x724f/0x72b3` to Lion `0x7250/0x72b4`, while terminate-alpha shifts from Snow `0x7250/0x72b4` to Lion `0x7251/0x72b5`. Both retain the same visible generated-MIG geometry: bits `0x1513`, option `0x3`, send/receive `0x24/0x2c`, accepted reply `0x24`, and equivalent NDR/result handling.
+
+The Snow terminate IDs collide numerically with Lion create IDs, so no opacity adapter is authorized from static evidence alone. Runtime main advances to a passive create/terminate alpha-plane transport trace that keeps the accepted NewWindow and release-backing adapters unchanged and rewrites no opacity traffic.
+
+This remains a user-space CoreGraphics/generated-MIG boundary. Syscall 295 remains a safety gate rather than the defect under investigation. No XNU source change, rebuild, or reboot is indicated.
