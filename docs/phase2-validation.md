@@ -1114,3 +1114,9 @@ The runtime live trace has now confirmed that the remaining CreateNewWindow abor
 
 Runtime main now advances to an exact, process-local user-space resource fallback experiment using only the SHA-pinned Snow Leopard 10.6.8 `Extras.rsrc`, copied from the user's own Snow installation and never installed into Lion's system framework. The forced external-resource path must pass on Snow before a single Lion fallback run is attempted. Lion's `Extras2.rsrc` is not considered equivalent. No additional XNU code change, kernel rebuild, or reboot is indicated.
 
+## Post-Extras notification request is the current runtime gate
+
+The exact process-local Snow `Extras.rsrc` fallback has advanced the restored PPC CreateNewWindow path beyond the prior HIToolbox/TTheme abort. Lion now reaches the exact resource lookup twice with `original=NULL fallback=NONNULL`, then emits a fourth legacy distributed-notification request that the intentionally three-name native registration broker rejects with status 25 (`BROKER_REJECT_NAME`). Execution subsequently reaches `M21_AFTER_CreateNewWindow` and returns `-304`; a downstream `com.apple.dock.server` lookup also fails with `-304`.
+
+Runtime work now pauses policy expansion and captures the exact fourth notification dictionary first. The new diagnostic broker keeps the already-reviewed first three registrations intact, records the fourth request's full binary plist/XML, and intentionally returns the same name rejection. The later dock-server boundary is not changed in this stage. Syscall-295 remains a safety gate only; no XNU code change, kernel rebuild, or reboot is indicated.
+
