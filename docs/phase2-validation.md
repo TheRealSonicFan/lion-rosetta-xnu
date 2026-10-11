@@ -1284,3 +1284,10 @@ Runtime validation therefore moves to one exact user-space FontServer lookup int
 The exact `com.apple.FontServer` launchd lookup compatibility path now passes live inside the restored-stack `SetWindowTitleWithCFString` run. The adapter returns a valid FontServer send right, after which legacy distributed-notification request index 5 appears with message ID 4, Mach size 356, and payload length 321. The unchanged exact-four broker rejects that request with status 25; the title call then does not return. Protected hashes remain unchanged and syscall 295 remains EBADF/no-SIGSYS.
 
 The next runtime stage is therefore a read-only schema audit of exactly that fifth notification request: accept the four already reviewed registrations, capture the fifth binary plist and XML form, deliberately return status 25, and stop. This is a user-space notification-policy boundary, not evidence of a new syscall/kernel defect. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Fifth title-path notification schema audited; exact registration integration next
+
+The post-FontServer fifth distributed-notification schema audit passed. The request is an exact legacy `register` dictionary for `com_apple_CoreText_FontManagerChangedNotification`, `kCFNotificationAnyObject`, behavior 1, counter 1, the established client/session scope, and a positive unique registration entry. The audit broker accepted the first four reviewed registrations, captured exactly one fifth request, intentionally returned status 25, and reported zero audit failures or unexpected rejects. Protected runtime/kernel identities remained unchanged and syscall 295 remained EBADF/no-SIGSYS.
+
+Runtime validation therefore advances to an exact-five user-space notification broker and one unchanged `SetWindowTitleWithCFString` integration run. Any sixth unreviewed registration remains rejected and must be audited independently. This is still a distributed-notification user-space policy boundary, not evidence of an XNU defect. No XNU source change, rebuild, or reboot is indicated.
