@@ -1145,3 +1145,12 @@ The exact-four post-Extras CreateNewWindow run completed the currently reviewed 
 This is a user-space launchd/bootstrap boundary, not evidence for another syscall-295 or VM/kernel defect. Runtime `main` now provides `docs/process-manager-createwindow-dockserver-bootstrap-protocol-adapter-experiment.md`, a standalone proof that first confirms the legacy Dock lookup on Snow Leopard and then sends one already-established Lion-format `0xbc` lookup request on Lion with target PID 0, zero instance UUID, and flags 0. CreateNewWindow and the CGS compatibility interposer remain unchanged until that isolated lookup result is reviewed.
 
 No XNU code change, rebuild, or reboot is indicated.
+
+
+## Dock bootstrap protocol proof passes; runtime integration is next
+
+The standalone `com.apple.dock.server` lookup discriminator has now passed. Snow Leopard resolved the exact service through ordinary PPC `bootstrap_look_up` with a nonzero port. Lion accepted the known UUID-expanded `0xbc` lookup request with target PID 0, zero instance UUID, and flags 0, returned the expected complex `0x1f8` reply, and supplied a valid send right. No crash/core diagnostic or protected-state change occurred, and the syscall-295 routing probe remained a clean EBADF/no-SIGSYS PASS.
+
+This closes the Dock lookup itself as another user-space launchd/bootstrap request-layout mismatch. Runtime `main` now advances to `docs/process-manager-createwindow-dockserver-bootstrap-compat-integration-experiment.md`, which adds only this exact service-name adaptation to an opt-in v2 build of the existing CGS bootstrap interposer, gates it with a Snow Leopard full CreateNewWindow passthrough control, and then performs one Lion CreateNewWindow run with the already accepted four-registration notification broker and exact Snow `Extras.rsrc` fallback unchanged.
+
+No XNU code change, rebuild, or reboot is indicated.
