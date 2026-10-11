@@ -1277,3 +1277,10 @@ The next runtime step is a standalone Lion-format launchd lookup discriminator f
 The standalone translated-PPC `com.apple.FontServer` discriminator now succeeds with the exact Lion launchd request schema: request ID `0x194`, send size `0xbc`, PID 0, zero UUID, flags 0, followed by complex reply ID `0x1f8`, descriptor count 1, and a valid send right. Snow Leopard's ordinary legacy lookup also succeeds with a nonzero port. No new diagnostic or protected-state change occurred, and syscall 295 remains EBADF/no-SIGSYS.
 
 Runtime validation therefore moves to one exact user-space FontServer lookup integration inside the existing `bootstrap_look_up` interposer, preserving all accepted CreateNewWindow compatibility and the exact-four notification broker unchanged. The fifth notification remains deliberately unaccepted until the FontServer live integration establishes whether it is truly the next boundary. No XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer integration passed; fifth notification is next user-space boundary
+
+The exact `com.apple.FontServer` launchd lookup compatibility path now passes live inside the restored-stack `SetWindowTitleWithCFString` run. The adapter returns a valid FontServer send right, after which legacy distributed-notification request index 5 appears with message ID 4, Mach size 356, and payload length 321. The unchanged exact-four broker rejects that request with status 25; the title call then does not return. Protected hashes remain unchanged and syscall 295 remains EBADF/no-SIGSYS.
+
+The next runtime stage is therefore a read-only schema audit of exactly that fifth notification request: accept the four already reviewed registrations, capture the fifth binary plist and XML form, deliberately return status 25, and stop. This is a user-space notification-policy boundary, not evidence of a new syscall/kernel defect. No XNU source change, rebuild, or reboot is indicated.
