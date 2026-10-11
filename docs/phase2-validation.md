@@ -1204,3 +1204,10 @@ Runtime main therefore moves to a static Snow-PPC versus Lion-i386 audit of thos
 The runtime static audit now compares the four CoreGraphics helpers exposed immediately after the successful NewWindow compatibility transaction. The first live helper, `CGSSetWindowToReleaseBackingOnOrderOut`, differs only in generated-MIG IDs between Snow PPC and Lion i386: `0x724b/0x72af` versus `0x724c/0x72b0`, with the same `0x1513` bits, `0x3` Mach option, `0x28/0x2c` send/receive sizes, and `0x24` reply geometry. Later ShapeWindow helpers also show ID movement, but they are not yet being changed.
 
 Runtime main therefore advances to a passive, exact release-backing transport trace under the already accepted NewWindow adapter. No release-backing translation is integrated in this stage. Syscall 295 remains a safety gate only, and the evidence continues to point to user-space CoreGraphics/MIG compatibility rather than XNU. No kernel source change, rebuild, or reboot is indicated.
+
+
+## Release-backing legacy MIG error reproduced; copied-buffer proof next
+
+The runtime passive trace now reproduces the first post-NewWindow CoreGraphics boundary exactly. Snow PPC sends release-backing request `0x724b` and receives `0x72af / 0x24 / result 0`; Lion translated PPC sends the same legacy ID and envelope, receives Mach success plus `0x72af / 0x24`, but the returned raw result `0xd0feffff` decodes to `-304`. The already accepted NewWindow adapter returns native success before this point, syscall 295 still reaches the compatibility front-end and returns EBADF without SIGSYS, and protected system hashes remain unchanged.
+
+Static Lion i386 identifies native release-backing request/reply IDs `0x724c/0x72b0` with the same visible message geometry. Runtime main therefore advances to a standalone no-Mach-IPC copied-buffer proof of only `0x724b -> 0x724c` and `0x72b0 -> 0x72af`. This continues to localize the defect to user-space CoreGraphics/generated-MIG compatibility. No XNU source change, rebuild, or reboot is indicated.
