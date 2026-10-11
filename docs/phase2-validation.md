@@ -1170,3 +1170,12 @@ The runtime static NewWindow audit now passes on Snow Leopard PPC and Lion i386.
 Runtime work therefore advances to a passive exact transport trace of the unchanged Snow PPC `0x7394` request on Snow and then Lion under the already accepted compatibility stack. No NewWindow ID conversion is integrated at this stage.
 
 The syscall-295 compatibility path remains an established safety gate only. This evidence does not indicate an XNU defect; no kernel code change, rebuild, or reboot is part of the next experiment.
+
+
+## Live CGS NewWindow trace confirms the boundary remains user-space
+
+The runtime passive trace has now dynamically reproduced the exact Snow PPC inline NewWindow request on both systems. Snow and Lion translated PPC both send legacy request ID 0x7394 with bits 0x1513, explicit send/receive sizes 0x68/0x40, and matching visible request words. Snow receives the expected 0x73f8 / 0x38 success reply and creates a window. Lion also completes mach_msg successfully and receives the expected legacy 0x73f8 reply ID, but in the accepted 0x24 error form with raw result 0xd0feffff; the returned NDR decodes that scalar to -304, matching public CreateNewWindow=-304.
+
+This is not a syscall-295, VM, Rosetta execution, or Mach transport failure. Together with the static Lion-native 0x739a/0x73fe contract, it isolates another generated-MIG user-space compatibility boundary. Runtime main advances to docs/process-manager-createwindow-cgs-newwindow-compat-protocol-adapter-experiment.md in lion-rosetta-runtime, a standalone no-Mach-IPC copied-buffer proof of the narrow request/reply ID conversion before any live adapter is integrated.
+
+No XNU code change, rebuild, or reboot is indicated.
