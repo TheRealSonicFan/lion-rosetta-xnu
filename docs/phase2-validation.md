@@ -1091,3 +1091,12 @@ Runtime evidence now reaches CreateNewWindow after the complete restored registr
 Runtime main now advances to a standalone distributed-notifications bootstrap compatibility protocol proof that reuses the already-proven Lion launchd 0x194/0x1f8 lookup formatter for exactly that service tuple. No CreateNewWindow retry or window-server adaptation is authorized until the standalone lookup result is reviewed.
 
 The syscall-295 probe remains healthy, and no additional XNU code change is indicated.
+
+## CreateNewWindow distributed-notifications schema captured; runtime registration gate next
+
+The runtime-side process-local bridge now reaches the exact legacy distributed-notifications `.2` path and the capture-only Lion broker has recorded all traffic observed before the current CreateNewWindow abort. The audit contains exactly three valid binary-property-list requests and all three are registrations: MCX management-status changes with object `com.apple.MCX` and behavior 1, CFPreferences external-domain changes with object `com.apple.CFPreferences` and behavior 1, and `AppleColorPreferencesChangedNotification` with Snow's serialized `kCFNotificationAnyObject` sentinel and behavior 4. The audit reports three captures, zero failures, unchanged protected hashes, and a passing syscall-295 compatibility probe.
+
+This supersedes the earlier runtime boundary at the missing Lion `.2` bootstrap service: the lookup/ingress problem has been bridged in process, and the current unresolved work is user-space registration semantics. Runtime main therefore advances to a dedicated native i386 broker that accepts only the three reviewed simultaneous registrations and normalizes the any-object sentinel through Lion's public CoreFoundation API before one controlled CreateNewWindow retry.
+
+No additional XNU code change, kernel rebuild, or reboot is indicated by this evidence.
+
