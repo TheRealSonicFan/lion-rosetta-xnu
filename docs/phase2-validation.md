@@ -1128,3 +1128,11 @@ Execution then crossed a newly reachable fourth legacy distributed-notification 
 
 The next runtime gate is `lion-rosetta-runtime/docs/process-manager-createwindow-post-extras-distributed-notification-schema-audit.md`. That diagnostic preserves the accepted first three native registrations and exact Snow `Extras.rsrc` fallback, captures the full fourth request dictionary, and intentionally continues to reject it. Do not broaden the notification allowlist or alter the downstream dock-server/CGS path until that request has been reviewed. No XNU code change, rebuild, or reboot is indicated.
 
+## Exact fourth notification schema reviewed
+
+The post-Extras CreateNewWindow schema audit passed after the exact Snow `Extras.rsrc` fallback. The fourth newly reachable legacy request is an ordinary eight-key `register` for `AppleAquaColorVariantChanged`, with `object=kCFNotificationAnyObject`, legacy behavior 4, counter 1, and the same PPC client/session discipline as the previously reviewed registrations. Static Snow Leopard HIToolbox evidence also contains this notification name in the appearance-preference cluster.
+
+The runtime next gate is `lion-rosetta-runtime/docs/process-manager-createwindow-post-extras-distributed-notification-registration-experiment.md`: accept only this exact fourth registration through the existing native public-CoreFoundation broker path and rerun CreateNewWindow once with the exact Snow theme-resource fallback unchanged. If all four registrations pass and the existing `com.apple.dock.server` bootstrap lookup still returns `-304`, that user-space/bootstrap boundary becomes the next diagnostic target.
+
+No XNU code change, rebuild, or reboot is indicated.
+
