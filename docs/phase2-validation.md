@@ -1300,3 +1300,10 @@ The reviewed fifth distributed-notification registration now succeeds under the 
 The window-title call nevertheless does not return. CoreText immediately reports repeated `CopyFontForName` and `CopyPropertiesForFontsMatchingRequest` MIG errors `FFFFFED0` from FontServer. No sixth notification rejection is involved. Runtime validation therefore advances to a passive Snow-versus-Lion `mach_msg` trace targeted only at the exact FontServer service port, so the first failing request ID, send/receive sizes, message body, and reply can be established before any RPC translation is considered.
 
 This remains a user-space service-protocol boundary. Syscall 295 remains EBADF/no-SIGSYS and protected identities are unchanged. No XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer first RPC is a user-space protocol boundary
+
+The passive Snow/Lion FontServer transport trace now identifies the first post-bootstrap divergence. Snow PPC sends request `0x32c8` with authoritative send/receive sizes `0x18/0x3c`, receives a complex `0x34` reply `0x332c`, and completes `SetWindowTitleWithCFString`. Lion translated PPC sends the same first request with successful Mach transport but receives a simple `0x24` reply `0x332c` whose raw status bytes are `65 fd ff ff`; later `0x32d9/0x32db` requests receive raw `d0 fe ff ff`, which CoreText reports as `FFFFFED0`.
+
+The next stage is a read-only shipped-binary audit of the FontServer first-RPC method and Lion-native equivalent/precondition. Syscall 295 remains EBADF/no-SIGSYS and the protected kernel/Rosetta identities remain unchanged. This is a user-space FontServer protocol issue; no XNU source change, rebuild, or reboot is indicated.
