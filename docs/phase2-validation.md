@@ -1136,3 +1136,12 @@ The runtime next gate is `lion-rosetta-runtime/docs/process-manager-createwindow
 
 No XNU code change, rebuild, or reboot is indicated.
 
+
+
+## Exact four notification registrations established; Dock bootstrap is next
+
+The exact-four post-Extras CreateNewWindow run completed the currently reviewed distributed-notification compatibility sequence. Lion's native public-CoreFoundation broker accepted all four exact registrations with zero rejects, while the exact Snow Leopard HIToolbox `Extras.rsrc` fallback remained effective. The next untouched Snow PPC call was ordinary `bootstrap_look_up("com.apple.dock.server")`; on Lion that call returned `MIG_BAD_ARGUMENTS (-304)` with a zero service port, and `CreateNewWindow` returned `-304` with a null window.
+
+This is a user-space launchd/bootstrap boundary, not evidence for another syscall-295 or VM/kernel defect. Runtime `main` now provides `docs/process-manager-createwindow-dockserver-bootstrap-protocol-adapter-experiment.md`, a standalone proof that first confirms the legacy Dock lookup on Snow Leopard and then sends one already-established Lion-format `0xbc` lookup request on Lion with target PID 0, zero instance UUID, and flags 0. CreateNewWindow and the CGS compatibility interposer remain unchanged until that isolated lookup result is reviewed.
+
+No XNU code change, rebuild, or reboot is indicated.
