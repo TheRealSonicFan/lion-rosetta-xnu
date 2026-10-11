@@ -1307,3 +1307,10 @@ This remains a user-space service-protocol boundary. Syscall 295 remains EBADF/n
 The passive Snow/Lion FontServer transport trace now identifies the first post-bootstrap divergence. Snow PPC sends request `0x32c8` with authoritative send/receive sizes `0x18/0x3c`, receives a complex `0x34` reply `0x332c`, and completes `SetWindowTitleWithCFString`. Lion translated PPC sends the same first request with successful Mach transport but receives a simple `0x24` reply `0x332c` whose raw status bytes are `65 fd ff ff`; later `0x32d9/0x32db` requests receive raw `d0 fe ff ff`, which CoreText reports as `FFFFFED0`.
 
 The next stage is a read-only shipped-binary audit of the FontServer first-RPC method and Lion-native equivalent/precondition. Syscall 295 remains EBADF/no-SIGSYS and the protected kernel/Rosetta identities remain unchanged. This is a user-space FontServer protocol issue; no XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer native rendezvous client changed on Lion
+
+The completed first-RPC shipped-binary audit proves that Snow Leopard PPC FontRegistry uses `_XTSendRendezvous` for the `0x32c8` rendezvous transaction, while Lion's required native i386 FontRegistry no longer contains that request constant and instead exposes `_XTSendRendezvous2`; Lion's registry rendezvous path calls the new routine. The `fontd` executable delegates the server implementation to `libATSServer.dylib`, so the remaining work is to decode the new client request and actual server dispatch path.
+
+Runtime validation therefore remains in a read-only user-space protocol-audit phase. The next focused audit exact-targets old/new rendezvous client functions and `libATSServer`; it will establish the Lion request/reply contract and the meaning of the `-667` reply before any adaptation is considered. This does not implicate XNU. No XNU source change, rebuild, or reboot is indicated.
