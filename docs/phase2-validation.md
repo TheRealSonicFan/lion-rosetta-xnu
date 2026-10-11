@@ -1291,3 +1291,12 @@ The next runtime stage is therefore a read-only schema audit of exactly that fif
 The post-FontServer fifth distributed-notification schema audit passed. The request is an exact legacy `register` dictionary for `com_apple_CoreText_FontManagerChangedNotification`, `kCFNotificationAnyObject`, behavior 1, counter 1, the established client/session scope, and a positive unique registration entry. The audit broker accepted the first four reviewed registrations, captured exactly one fifth request, intentionally returned status 25, and reported zero audit failures or unexpected rejects. Protected runtime/kernel identities remained unchanged and syscall 295 remained EBADF/no-SIGSYS.
 
 Runtime validation therefore advances to an exact-five user-space notification broker and one unchanged `SetWindowTitleWithCFString` integration run. Any sixth unreviewed registration remains rejected and must be audited independently. This is still a distributed-notification user-space policy boundary, not evidence of an XNU defect. No XNU source change, rebuild, or reboot is indicated.
+
+
+## Exact fifth notification accepted; FontServer RPC transport is next boundary
+
+The reviewed fifth distributed-notification registration now succeeds under the exact-five user-space broker. The broker finishes with five accepted registrations, zero rejects, and exact state. The accepted `com.apple.FontServer` bootstrap adapter also still returns a valid send right.
+
+The window-title call nevertheless does not return. CoreText immediately reports repeated `CopyFontForName` and `CopyPropertiesForFontsMatchingRequest` MIG errors `FFFFFED0` from FontServer. No sixth notification rejection is involved. Runtime validation therefore advances to a passive Snow-versus-Lion `mach_msg` trace targeted only at the exact FontServer service port, so the first failing request ID, send/receive sizes, message body, and reply can be established before any RPC translation is considered.
+
+This remains a user-space service-protocol boundary. Syscall 295 remains EBADF/no-SIGSYS and protected identities are unchanged. No XNU source change, rebuild, or reboot is indicated.
