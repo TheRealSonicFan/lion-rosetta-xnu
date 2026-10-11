@@ -1100,3 +1100,11 @@ This supersedes the earlier runtime boundary at the missing Lion `.2` bootstrap 
 
 No additional XNU code change, kernel rebuild, or reboot is indicated by this evidence.
 
+## CreateNewWindow notification registration closed; HIToolbox resource lookup next
+
+The runtime exact-registration experiment now proves that the three real legacy distributed-notification registrations are not the remaining CreateNewWindow blocker. Lion accepted all three reviewed registrations through the native public CoreFoundation bridge, reported zero broker rejects and zero callbacks, and still aborted before CreateNewWindow returned. The immediate diagnostic remained the same HIToolbox framework-resource URL failure followed by TTheme damage `-4960`.
+
+Runtime evidence and the historical resource audits now point to a user-space HIToolbox theme-resource boundary. Snow PPC HIToolbox statically requests `Extras.rsrc` through `CFBundleCopyResourceURLForLocalization`; Snow's framework bundle contains that resource, while Lion's framework bundle does not. Runtime main advances only to a pass-through live-call trace to confirm that differential on the actual CreateNewWindow path before any resource compatibility mechanism is considered.
+
+The syscall-295 probe remains healthy. No additional XNU code change, kernel rebuild, or reboot is indicated.
+
