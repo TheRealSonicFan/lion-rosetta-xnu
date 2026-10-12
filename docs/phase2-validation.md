@@ -1356,3 +1356,10 @@ Runtime now advances to a capture/decode audit of that sixth payload while prese
 The post-ShowWindow schema audit passed and decoded request 6 as another `AppleAquaColorVariantChanged` registration with the already reviewed AnyObject/behavior-4 filter, `counter=2`, and a distinct positive entry. The distributed-notifications ABI already treats `entry/counter` as per-registration callback identity, so runtime now advances to a narrowly sequence-gated exact-six native broker and one unchanged ShowWindow rerun.
 
 No kernel behavior is implicated by this result. Syscall 295 remains healthy and protected hashes are unchanged; no XNU source change, rebuild, or reboot is indicated.
+
+
+## Exact-six ShowWindow registration accepted; CGS transport remains user-space boundary
+
+The exact-six distributed-notification integration now accepts all six reviewed registrations with zero rejects and no seventh request. The PPC ShowWindow call still reaches its pre-call marker without reaching its post-call marker, exits 139, and produces crash/core diagnostics; the raw user-space log repeats a `CGSAddTrackingArea` MIG server type-check failure in the ShowWindow interval.
+
+Runtime therefore advances to a behavior-preserving application-CGS Mach transport trace on the existing restored stack. Syscall 295 remains healthy and protected hashes remain unchanged. No XNU source change, kernel rebuild, or reboot is indicated by this result.
