@@ -1405,3 +1405,10 @@ Runtime therefore advances to one exact user-space SetFrontWindow ID-conversion 
 The exact user-space SetFrontWindow compatibility conversion is now live-proven on Lion and returns native success. OrderFrontConditionally and AddTrackingArea also remain successful. ShowWindow still does not return, but there is no newly observed application-CGS request/reply mismatch after SetFrontWindow.
 
 The remaining first-order evidence is CoreGraphics color-profile/window-context initialization failure followed by null-context rendering errors. Runtime therefore advances only to a static Snow-versus-Lion CoreGraphics audit of `CGSColorProfileCreateWithColorProfileID`, `_CGSWindowColorProfile`, `CGWindowContextCreate`, and their client/port dependencies. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow ColorProfileClient remains a user-space protocol boundary
+
+The static Snow/Lion CoreGraphics differential now attributes the persistent color-profile initialization failure to the generated `__CGSColorProfileClient` RPC family. Snow PPC uses request/reply `0x74d4 / 0x7538`; Lion i386 uses `0x74d6 / 0x753a`, with otherwise equivalent request bits, descriptor/body geometry, send/receive sizes, and reply layout.
+
+Runtime advances only to a target-specific passive live trace of the legacy ColorProfileClient transaction before any ID rewrite is authorized. No XNU source change, kernel rebuild, or reboot is indicated by this boundary.
