@@ -1335,3 +1335,10 @@ Runtime validation therefore advances only to a standalone no-IPC copied-buffer 
 The runtime standalone PPC no-IPC proof has now validated the first FontServer rendezvous conversion policy. It changes only legacy request ID `0x32c8 -> 0x32e7` while widening the receive argument `0x3c -> 0x40`; native Lion complex success `0x334b/0x38`, protocol version 5, is converted to legacy `0x332c/0x34` by preserving the descriptor/NDR bytes, removing the version word, and relocating the explicit-size word. The modeled simple-error path preserves its nonzero result. Snow control and syscall-295 safety gates passed, no diagnostics appeared, and protected hashes remained unchanged.
 
 Runtime validation therefore advances to one narrowly gated user-space live rendezvous integration run with later FontServer RPCs left trace-only and unadapted. This remains outside XNU; no kernel source change, rebuild, or reboot is indicated.
+
+
+## FontServer rendezvous live integration passed
+
+The runtime live translated-PPC title test now proves the first FontServer rendezvous compatibility rule end to end: legacy request `0x32c8` was converted to native `0x32e7`, Lion returned the expected complex `0x334b/0x38` protocol-version-5 reply, and runtime code reconstructed the legacy `0x332c/0x34` reply with descriptor/NDR and explicit size preserved. The adapter fired exactly once, `SetWindowTitleWithCFString` returned success, disposal completed, no new diagnostics appeared, and protected hashes remained unchanged. No later FontServer RPC was needed for the title operation.
+
+Runtime validation now advances only to an isolated `ShowWindow` call with all accepted compatibility paths unchanged. This remains a user-space Carbon/WindowServer discriminator; no XNU source change, rebuild, or reboot is indicated.
