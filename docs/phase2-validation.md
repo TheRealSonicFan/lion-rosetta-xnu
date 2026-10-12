@@ -1377,3 +1377,10 @@ Runtime now advances to a static Snow-PPC-versus-Lion-i386 `CGSAddTrackingArea` 
 The completed Snow PPC / Lion i386 CoreGraphics audit identifies the live ShowWindow tracking-area request as `__CGSAddTrackingAreaInline`. Snow uses `0x7388 / 0x73ec`; Lion uses `0x738e / 0x73f2`. The visible generated-MIG geometry is otherwise aligned: bits `0x1513`, option `0x3`, receive size `0x2c`, reply size `0x24`, and send size `0x3c + 4*count`. The previously captured count-9 request therefore maps exactly to the observed `0x60` send size.
 
 Runtime now advances to one guarded user-space inline-ID compatibility integration. The neighboring ShowWindow CGS failures and color-profile/window-context diagnostics remain unmodified. Syscall 295 and protected kernel state remain outside this user-space protocol mismatch, so no XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow tracking-area adapter passes; next boundary remains user-space
+
+The exact user-space `CGSAddTrackingAreaInline` adapter now succeeds live on Lion: the observed count-9 PPC request is converted `0x7388 -> 0x738e`, Lion returns native `0x73f2 / result 0`, and the adapter returns PPC-facing `0x73ec / result 0` without changing the payload. Snow passthrough remains successful and syscall 295 still returns the expected EBADF path.
+
+`ShowWindow` nevertheless remains open with `S01` absent and exit 139. Two later application-CGS replies still return `-304` (`0x72e7 / 0x734b` and `0x72f2 / 0x7356`) while the color-profile/window-context diagnostic cluster persists. Runtime therefore advances only to a read-only Snow-PPC/Lion-i386 CoreGraphics protocol audit of those transactions. No XNU source change, kernel rebuild, or reboot is indicated.
