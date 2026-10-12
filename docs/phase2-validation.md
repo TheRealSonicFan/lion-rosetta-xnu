@@ -1384,3 +1384,10 @@ Runtime now advances to one guarded user-space inline-ID compatibility integrati
 The exact user-space `CGSAddTrackingAreaInline` adapter now succeeds live on Lion: the observed count-9 PPC request is converted `0x7388 -> 0x738e`, Lion returns native `0x73f2 / result 0`, and the adapter returns PPC-facing `0x73ec / result 0` without changing the payload. Snow passthrough remains successful and syscall 295 still returns the expected EBADF path.
 
 `ShowWindow` nevertheless remains open with `S01` absent and exit 139. Two later application-CGS replies still return `-304` (`0x72e7 / 0x734b` and `0x72f2 / 0x7356`) while the color-profile/window-context diagnostic cluster persists. Runtime therefore advances only to a read-only Snow-PPC/Lion-i386 CoreGraphics protocol audit of those transactions. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow post-tracking static audit remains a user-space boundary
+
+The Snow PPC and Lion i386 CoreGraphics audits identify the first remaining post-`S00` failure as `__CGSOrderFrontConditionally`: Snow uses request/reply `0x72e7 / 0x734b`, Lion uses `0x72ea / 0x734e`, and the generated-MIG envelope/payload geometry otherwise matches. The later `__CGSSetFrontWindow` request is independently the same class of release skew, Snow `0x72f2 / 0x7356` versus Lion `0x72f5 / 0x7359`, but it remains held.
+
+Runtime advances only to one exact user-space `CGSOrderFrontConditionally` compatibility experiment after a Snow passthrough control and the existing syscall-295 health gate. No XNU source change, kernel rebuild, or reboot is indicated.
