@@ -1349,3 +1349,10 @@ Runtime validation now advances only to an isolated `ShowWindow` call with all a
 The isolated ShowWindow subject passes on Snow Leopard but, on Lion, reaches `S00_BEFORE_ShowWindow` and then encounters a sixth legacy distributed-notification request (`id=4`, size 320, payload 287) that the current exact-five broker rejects with status 20. `S01_AFTER_ShowWindow` is not reached. The accepted FontServer rendezvous rule still passes exactly once, protected hashes remain unchanged, and syscall 295 remains healthy.
 
 Runtime now advances to a capture/decode audit of that sixth payload while preserving the status-20 rejection. This is a user-space notification/Carbon boundary; no XNU source change, rebuild, or reboot is indicated.
+
+
+## Sixth ShowWindow request is a user-space registration identity case
+
+The post-ShowWindow schema audit passed and decoded request 6 as another `AppleAquaColorVariantChanged` registration with the already reviewed AnyObject/behavior-4 filter, `counter=2`, and a distinct positive entry. The distributed-notifications ABI already treats `entry/counter` as per-registration callback identity, so runtime now advances to a narrowly sequence-gated exact-six native broker and one unchanged ShowWindow rerun.
+
+No kernel behavior is implicated by this result. Syscall 295 remains healthy and protected hashes are unchanged; no XNU source change, rebuild, or reboot is indicated.
