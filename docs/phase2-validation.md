@@ -1453,3 +1453,12 @@ The single Lion ResolveColorProfile compatibility run also succeeds at the user-
 The next repeated failure is still in user-space/CoreGraphics handling: an observed `0x7263 / 0x72c7` transaction completes Mach transport and returns a result-zero `0x34` reply, followed immediately on Lion by `_CGSBindWindowBacking: cannot map backing data shmem` and `_CGSLockWindow: Unable to lock window`. Snow uses the same observed IDs and geometry without that failure. Runtime therefore advances to a read-only Snow-PPC/Lion-i386 backing-lock protocol/ABI audit before any live mapping adaptation is considered.
 
 No XNU source change, kernel rebuild, or reboot is indicated by this result.
+
+
+## WindowBackingInfo collision remains a user-space compatibility boundary
+
+The Snow-PPC/Lion-i386 CoreGraphics backing-lock audit isolates the next ShowWindow failure without changing the accepted kernel path. Snow `__CGSGetWindowBackingInfo` uses `0x7263 / 0x72c7`; Lion's same helper uses `0x7264 / 0x72c8` with the same live-relevant request/reply geometry. Lion routine `0x7263 / 0x72c7` is instead `__CGSGetWindowInfo`.
+
+This explains the observed Lion behavior: the translated PPC `0x7263` request is accepted as the wrong semantic routine and can return a result-zero reply whose outputs are then misinterpreted as backing shared-memory information. Runtime therefore advances to a one-call, ID-only user-space compatibility experiment that converts only `0x7263 -> 0x7264` and `0x72c8 -> 0x72c7`, preserving all request/reply body bytes.
+
+No XNU source change, kernel rebuild, or reboot is indicated by this result.
