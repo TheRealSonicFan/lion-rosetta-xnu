@@ -1391,3 +1391,10 @@ The exact user-space `CGSAddTrackingAreaInline` adapter now succeeds live on Lio
 The Snow PPC and Lion i386 CoreGraphics audits identify the first remaining post-`S00` failure as `__CGSOrderFrontConditionally`: Snow uses request/reply `0x72e7 / 0x734b`, Lion uses `0x72ea / 0x734e`, and the generated-MIG envelope/payload geometry otherwise matches. The later `__CGSSetFrontWindow` request is independently the same class of release skew, Snow `0x72f2 / 0x7356` versus Lion `0x72f5 / 0x7359`, but it remains held.
 
 Runtime advances only to one exact user-space `CGSOrderFrontConditionally` compatibility experiment after a Snow passthrough control and the existing syscall-295 health gate. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow SetFrontWindow remains a user-space protocol boundary
+
+The exact OrderFrontConditionally compatibility conversion passed on Lion, and the existing AddTrackingArea conversion remained successful. The next deterministic nonzero-window failure is `__CGSSetFrontWindow`: Snow PPC uses request/reply `0x72f2 / 0x7356`, Lion i386 uses `0x72f5 / 0x7359`, with otherwise equivalent generated-MIG geometry. The unchanged Snow ID returns `-304` on Lion before ShowWindow returns.
+
+Runtime therefore advances to one exact user-space SetFrontWindow ID-conversion experiment after the existing Snow passthrough control and syscall-295 health gate. The later zero-window disposal call remains held. No XNU source change, kernel rebuild, or reboot is indicated.
