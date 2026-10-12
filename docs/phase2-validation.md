@@ -1342,3 +1342,10 @@ Runtime validation therefore advances to one narrowly gated user-space live rend
 The runtime live translated-PPC title test now proves the first FontServer rendezvous compatibility rule end to end: legacy request `0x32c8` was converted to native `0x32e7`, Lion returned the expected complex `0x334b/0x38` protocol-version-5 reply, and runtime code reconstructed the legacy `0x332c/0x34` reply with descriptor/NDR and explicit size preserved. The adapter fired exactly once, `SetWindowTitleWithCFString` returned success, disposal completed, no new diagnostics appeared, and protected hashes remained unchanged. No later FontServer RPC was needed for the title operation.
 
 Runtime validation now advances only to an isolated `ShowWindow` call with all accepted compatibility paths unchanged. This remains a user-space Carbon/WindowServer discriminator; no XNU source change, rebuild, or reboot is indicated.
+
+
+## ShowWindow reaches a user-space sixth-notification boundary
+
+The isolated ShowWindow subject passes on Snow Leopard but, on Lion, reaches `S00_BEFORE_ShowWindow` and then encounters a sixth legacy distributed-notification request (`id=4`, size 320, payload 287) that the current exact-five broker rejects with status 20. `S01_AFTER_ShowWindow` is not reached. The accepted FontServer rendezvous rule still passes exactly once, protected hashes remain unchanged, and syscall 295 remains healthy.
+
+Runtime now advances to a capture/decode audit of that sixth payload while preserving the status-20 rejection. This is a user-space notification/Carbon boundary; no XNU source change, rebuild, or reboot is indicated.
