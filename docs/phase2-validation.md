@@ -1442,3 +1442,14 @@ The completed passive ResolveColorProfile experiment leaves the accepted syscall
 The Snow control proves the legacy resolver is healthy: the profile-ID-1 `0x74d7` request receives `0x753b / 0x34` with result zero and the full ShowWindow control passes. In the single Lion run, the accepted ColorProfileClient adapter succeeds first and returns a nonzero client ID; the following resolver uses that same semantic client ID with profile ID 1. Each exact legacy `0x74d7` resolver request completes Mach transport but receives the legacy-facing `0x753b / 0x24` error envelope with raw `0xd0feffff` (-304). This live result matches the static `0x74d7 / 0x753b` versus `0x74d9 / 0x753d` generated-MIG differential.
 
 Runtime therefore advances to a narrowly gated user-space ID-only ResolveColorProfile compatibility experiment: private-copy request ID `0x74d7 -> 0x74d9`, native reply ID `0x753d -> 0x753b`, preserving descriptor, NDR, client ID, profile ID, result, and output bytes. No XNU source change, kernel rebuild, or reboot is indicated. `CGSReleaseColorProfile`, profile synthesis, downstream graphics workarounds, and the held ShapeWindow boundary remain outside this authorization.
+
+
+## ResolveColorProfile compatibility passes; next boundary remains user-space backing
+
+The accepted Lion syscall-295 probe remains unchanged and passes on the same kernel SHA with `EBADF` and no `SIGSYS`.
+
+The single Lion ResolveColorProfile compatibility run also succeeds at the user-space generated-MIG boundary. The exact provenance-gated legacy `0x74d7` profile-ID-1 request is changed only to Lion `0x74d9`; the native server returns `0x753d / 0x34` with result zero; the PPC-facing reply changes only back to `0x753b`. The prior color-profile resolution and window-context creation diagnostic cascade disappears.
+
+The next repeated failure is still in user-space/CoreGraphics handling: an observed `0x7263 / 0x72c7` transaction completes Mach transport and returns a result-zero `0x34` reply, followed immediately on Lion by `_CGSBindWindowBacking: cannot map backing data shmem` and `_CGSLockWindow: Unable to lock window`. Snow uses the same observed IDs and geometry without that failure. Runtime therefore advances to a read-only Snow-PPC/Lion-i386 backing-lock protocol/ABI audit before any live mapping adaptation is considered.
+
+No XNU source change, kernel rebuild, or reboot is indicated by this result.
