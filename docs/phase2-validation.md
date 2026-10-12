@@ -1370,3 +1370,10 @@ Runtime therefore advances to a behavior-preserving application-CGS Mach transpo
 The completed passive application-CGS trace is behavior-preserving on Snow Leopard and confirms a user-space generated-MIG boundary on Lion. The unchanged PPC client sends legacy `0x7388 -> 0x73ec` with the same `0x1513`, `0x60 / 0x2c` envelope on both systems. Snow returns result 0; Lion returns `-304 / MIG_BAD_ARGUMENTS` and immediately logs `MIG: server type check failure: CGSAddTrackingArea`. Syscall 295 remains healthy and the protected kernel/runtime hashes are unchanged.
 
 Runtime now advances to a static Snow-PPC-versus-Lion-i386 `CGSAddTrackingArea` CoreGraphics protocol audit. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow CGSAddTrackingArea static differential remains user-space
+
+The completed Snow PPC / Lion i386 CoreGraphics audit identifies the live ShowWindow tracking-area request as `__CGSAddTrackingAreaInline`. Snow uses `0x7388 / 0x73ec`; Lion uses `0x738e / 0x73f2`. The visible generated-MIG geometry is otherwise aligned: bits `0x1513`, option `0x3`, receive size `0x2c`, reply size `0x24`, and send size `0x3c + 4*count`. The previously captured count-9 request therefore maps exactly to the observed `0x60` send size.
+
+Runtime now advances to one guarded user-space inline-ID compatibility integration. The neighboring ShowWindow CGS failures and color-profile/window-context diagnostics remain unmodified. Syscall 295 and protected kernel state remain outside this user-space protocol mismatch, so no XNU source change, kernel rebuild, or reboot is indicated.
