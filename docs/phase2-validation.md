@@ -1462,3 +1462,14 @@ The Snow-PPC/Lion-i386 CoreGraphics backing-lock audit isolates the next ShowWin
 This explains the observed Lion behavior: the translated PPC `0x7263` request is accepted as the wrong semantic routine and can return a result-zero reply whose outputs are then misinterpreted as backing shared-memory information. Runtime therefore advances to a one-call, ID-only user-space compatibility experiment that converts only `0x7263 -> 0x7264` and `0x72c8 -> 0x72c7`, preserving all request/reply body bytes.
 
 No XNU source change, kernel rebuild, or reboot is indicated by this result.
+
+
+## WindowBackingInfo compatibility passes; seventh notification remains user-space
+
+The Snow WindowBackingInfo passthrough control completes ShowWindow and the single Lion compatibility run proves the one-call user-space ID correction. The exact legacy request `0x7263` is converted to Lion `0x7264`; Lion returns native `0x72c8 / 0x34 / result 0`; the PPC-facing reply is restored to `0x72c7`. Only the request/reply ID byte changes; the window ID, result, and both backing-info output pairs are preserved. The prior backing-data shared-memory mapping and `_CGSLockWindow` failure cascade disappears.
+
+The accepted syscall-295 preflight remains unchanged: the expected kernel image routes syscall 295 to the compatibility front-end and returns EBADF without SIGSYS. No new kernel evidence appears.
+
+The next boundary is later and wholly user-space: distributed-notification request index 7, bits `0x1111`, message ID 4, message size 356, payload 322, rejected by the exact-six broker with status 25 / unknown name. Runtime advances to a capture/decode-only seventh-request schema audit with the same rejection preserved.
+
+No XNU source change, kernel rebuild, or reboot is indicated.
