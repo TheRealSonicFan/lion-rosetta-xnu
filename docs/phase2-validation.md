@@ -1433,3 +1433,12 @@ The first-order failure has therefore moved downstream from client initializatio
 The Snow PPC / Lion i386 CoreGraphics resolver audit passes and isolates another generated-MIG release skew immediately downstream of the accepted ColorProfileClient adapter. Snow `__CGSResolveColorProfile` uses request/reply `0x74d7 / 0x753b`; Lion uses `0x74d9 / 0x753d`. The request bits, one-port-descriptor shape, `0x38 / 0x3c` send/receive sizes, and `0x34 / 0x24` success/error reply geometry remain aligned. The corresponding server-side resolve path still performs the same live-relevant client/task/profile lookup sequence.
 
 Runtime therefore advances only to a behavior-preserving passive live ResolveColorProfile discriminator with the accepted ColorProfileClient adapter unchanged. The new static evidence does not indicate an XNU source change, kernel rebuild, or reboot.
+
+
+## ResolveColorProfile live trace proves user-space generated-MIG boundary
+
+The completed passive ResolveColorProfile experiment leaves the accepted syscall-295 path unchanged: the Lion probe still reaches the compatibility front-end and returns `EBADF` without `SIGSYS`.
+
+The Snow control proves the legacy resolver is healthy: the profile-ID-1 `0x74d7` request receives `0x753b / 0x34` with result zero and the full ShowWindow control passes. In the single Lion run, the accepted ColorProfileClient adapter succeeds first and returns a nonzero client ID; the following resolver uses that same semantic client ID with profile ID 1. Each exact legacy `0x74d7` resolver request completes Mach transport but receives the legacy-facing `0x753b / 0x24` error envelope with raw `0xd0feffff` (-304). This live result matches the static `0x74d7 / 0x753b` versus `0x74d9 / 0x753d` generated-MIG differential.
+
+Runtime therefore advances to a narrowly gated user-space ID-only ResolveColorProfile compatibility experiment: private-copy request ID `0x74d7 -> 0x74d9`, native reply ID `0x753d -> 0x753b`, preserving descriptor, NDR, client ID, profile ID, result, and output bytes. No XNU source change, kernel rebuild, or reboot is indicated. `CGSReleaseColorProfile`, profile synthesis, downstream graphics workarounds, and the held ShapeWindow boundary remain outside this authorization.
