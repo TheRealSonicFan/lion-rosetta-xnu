@@ -1412,3 +1412,10 @@ The remaining first-order evidence is CoreGraphics color-profile/window-context 
 The static Snow/Lion CoreGraphics differential now attributes the persistent color-profile initialization failure to the generated `__CGSColorProfileClient` RPC family. Snow PPC uses request/reply `0x74d4 / 0x7538`; Lion i386 uses `0x74d6 / 0x753a`, with otherwise equivalent request bits, descriptor/body geometry, send/receive sizes, and reply layout.
 
 Runtime advances only to a target-specific passive live trace of the legacy ColorProfileClient transaction before any ID rewrite is authorized. No XNU source change, kernel rebuild, or reboot is indicated by this boundary.
+
+
+## ColorProfileClient live trace confirms ID-only user-space boundary
+
+The completed Snow/Lion live trace now confirms the static ColorProfileClient differential. Snow PPC sends `0x74d4` and receives `0x7538 / 0x28` with result zero and a nonzero client ID. On Lion, the unchanged PPC client sends the same exact `0x74d4` request four times; Mach transport succeeds each time, but the server returns `0x7538 / 0x24` with raw `0xd0feffff` (legacy-visible `-304`) and no client ID. No Lion-native `0x74d6` request is emitted by the PPC client. The failures are immediately followed by the observed CoreGraphics color-profile initialization and window-context diagnostics, while the accepted upstream ShowWindow adapters and exact-six distributed-notifications broker remain successful and protected hashes remain unchanged.
+
+Runtime therefore advances to one exact user-space ColorProfileClient compatibility conversion: request ID `0x74d4 -> 0x74d6`, native reply ID `0x753a -> 0x7538`, with the request descriptor/body/PID and reply result/client-ID bytes preserved. This new evidence does not indicate an XNU source change, kernel rebuild, or reboot.
