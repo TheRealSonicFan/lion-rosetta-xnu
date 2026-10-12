@@ -1398,3 +1398,10 @@ Runtime advances only to one exact user-space `CGSOrderFrontConditionally` compa
 The exact OrderFrontConditionally compatibility conversion passed on Lion, and the existing AddTrackingArea conversion remained successful. The next deterministic nonzero-window failure is `__CGSSetFrontWindow`: Snow PPC uses request/reply `0x72f2 / 0x7356`, Lion i386 uses `0x72f5 / 0x7359`, with otherwise equivalent generated-MIG geometry. The unchanged Snow ID returns `-304` on Lion before ShowWindow returns.
 
 Runtime therefore advances to one exact user-space SetFrontWindow ID-conversion experiment after the existing Snow passthrough control and syscall-295 health gate. The later zero-window disposal call remains held. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ShowWindow color-profile/window-context remains a user-space boundary
+
+The exact user-space SetFrontWindow compatibility conversion is now live-proven on Lion and returns native success. OrderFrontConditionally and AddTrackingArea also remain successful. ShowWindow still does not return, but there is no newly observed application-CGS request/reply mismatch after SetFrontWindow.
+
+The remaining first-order evidence is CoreGraphics color-profile/window-context initialization failure followed by null-context rendering errors. Runtime therefore advances only to a static Snow-versus-Lion CoreGraphics audit of `CGSColorProfileCreateWithColorProfileID`, `_CGSWindowColorProfile`, `CGWindowContextCreate`, and their client/port dependencies. No XNU source change, kernel rebuild, or reboot is indicated.
