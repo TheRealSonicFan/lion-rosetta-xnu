@@ -1321,3 +1321,10 @@ Runtime validation therefore remains in a read-only user-space protocol-audit ph
 The completed runtime v2 audit decodes Lion's native i386 FontRegistry rendezvous client as `_XTSendRendezvous2`, request `0x32e7`, bits `0x1513`, send/receive `0x18/0x40`, reply `0x334b`, and complex success size `0x38`. Its caller requires returned protocol version `5` and nonzero rendezvous payload state. Snow PPC remains on legacy `_XTSendRendezvous` request `0x32c8` with complex `0x332c/0x34` success.
 
 The corrected Lion `libATSServer.dylib` audit has no true protocol-range instruction immediates, so the native server dispatch and semantic meaning of the translated legacy `-667` response remain unresolved statically. Runtime validation therefore advances to one native-i386 Lion FontServer Rendezvous2 transport capture only. This remains a user-space framework/service-protocol boundary; no XNU source change, rebuild, or reboot is indicated.
+
+
+## Native Lion FontServer Rendezvous2 dynamically confirmed
+
+The runtime one-shot native-i386 Lion trace now closes the remaining FontServer rendezvous server-contract gap. Lion sent request `0x32e7` with bits `0x1513` and send/receive `0x18/0x40`; `mach_msg` returned success with complex reply `0x334b / 0x38`, descriptor count 1, protocol version `5`, and explicit payload size `0x1000`. This matches the static `_XTSendRendezvous2` decode.
+
+Runtime validation therefore advances only to a standalone no-IPC copied-buffer compatibility proof for the legacy Snow `0x32c8/0x332c/0x34` contract versus Lion `0x32e7/0x334b/0x38`. This remains a user-space framework/service-protocol boundary. No XNU source change, rebuild, or reboot is indicated.
