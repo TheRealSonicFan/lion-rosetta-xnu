@@ -1328,3 +1328,10 @@ The corrected Lion `libATSServer.dylib` audit has no true protocol-range instruc
 The runtime one-shot native-i386 Lion trace now closes the remaining FontServer rendezvous server-contract gap. Lion sent request `0x32e7` with bits `0x1513` and send/receive `0x18/0x40`; `mach_msg` returned success with complex reply `0x334b / 0x38`, descriptor count 1, protocol version `5`, and explicit payload size `0x1000`. This matches the static `_XTSendRendezvous2` decode.
 
 Runtime validation therefore advances only to a standalone no-IPC copied-buffer compatibility proof for the legacy Snow `0x32c8/0x332c/0x34` contract versus Lion `0x32e7/0x334b/0x38`. This remains a user-space framework/service-protocol boundary. No XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer rendezvous copied-buffer policy proof passed
+
+The runtime standalone PPC no-IPC proof has now validated the first FontServer rendezvous conversion policy. It changes only legacy request ID `0x32c8 -> 0x32e7` while widening the receive argument `0x3c -> 0x40`; native Lion complex success `0x334b/0x38`, protocol version 5, is converted to legacy `0x332c/0x34` by preserving the descriptor/NDR bytes, removing the version word, and relocating the explicit-size word. The modeled simple-error path preserves its nonzero result. Snow control and syscall-295 safety gates passed, no diagnostics appeared, and protected hashes remained unchanged.
+
+Runtime validation therefore advances to one narrowly gated user-space live rendezvous integration run with later FontServer RPCs left trace-only and unadapted. This remains outside XNU; no kernel source change, rebuild, or reboot is indicated.
