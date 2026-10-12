@@ -1314,3 +1314,10 @@ The next stage is a read-only shipped-binary audit of the FontServer first-RPC m
 The completed first-RPC shipped-binary audit proves that Snow Leopard PPC FontRegistry uses `_XTSendRendezvous` for the `0x32c8` rendezvous transaction, while Lion's required native i386 FontRegistry no longer contains that request constant and instead exposes `_XTSendRendezvous2`; Lion's registry rendezvous path calls the new routine. The `fontd` executable delegates the server implementation to `libATSServer.dylib`, so the remaining work is to decode the new client request and actual server dispatch path.
 
 Runtime validation therefore remains in a read-only user-space protocol-audit phase. The next focused audit exact-targets old/new rendezvous client functions and `libATSServer`; it will establish the Lion request/reply contract and the meaning of the `-667` reply before any adaptation is considered. This does not implicate XNU. No XNU source change, rebuild, or reboot is indicated.
+
+
+## FontServer Rendezvous2 static contract decoded; still user-space only
+
+The completed runtime v2 audit decodes Lion's native i386 FontRegistry rendezvous client as `_XTSendRendezvous2`, request `0x32e7`, bits `0x1513`, send/receive `0x18/0x40`, reply `0x334b`, and complex success size `0x38`. Its caller requires returned protocol version `5` and nonzero rendezvous payload state. Snow PPC remains on legacy `_XTSendRendezvous` request `0x32c8` with complex `0x332c/0x34` success.
+
+The corrected Lion `libATSServer.dylib` audit has no true protocol-range instruction immediates, so the native server dispatch and semantic meaning of the translated legacy `-667` response remain unresolved statically. Runtime validation therefore advances to one native-i386 Lion FontServer Rendezvous2 transport capture only. This remains a user-space framework/service-protocol boundary; no XNU source change, rebuild, or reboot is indicated.
