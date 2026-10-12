@@ -1363,3 +1363,10 @@ No kernel behavior is implicated by this result. Syscall 295 remains healthy and
 The exact-six distributed-notification integration now accepts all six reviewed registrations with zero rejects and no seventh request. The PPC ShowWindow call still reaches its pre-call marker without reaching its post-call marker, exits 139, and produces crash/core diagnostics; the raw user-space log repeats a `CGSAddTrackingArea` MIG server type-check failure in the ShowWindow interval.
 
 Runtime therefore advances to a behavior-preserving application-CGS Mach transport trace on the existing restored stack. Syscall 295 remains healthy and protected hashes remain unchanged. No XNU source change, kernel rebuild, or reboot is indicated by this result.
+
+
+## ShowWindow passive trace localizes user-space CGSAddTrackingArea mismatch
+
+The completed passive application-CGS trace is behavior-preserving on Snow Leopard and confirms a user-space generated-MIG boundary on Lion. The unchanged PPC client sends legacy `0x7388 -> 0x73ec` with the same `0x1513`, `0x60 / 0x2c` envelope on both systems. Snow returns result 0; Lion returns `-304 / MIG_BAD_ARGUMENTS` and immediately logs `MIG: server type check failure: CGSAddTrackingArea`. Syscall 295 remains healthy and the protected kernel/runtime hashes are unchanged.
+
+Runtime now advances to a static Snow-PPC-versus-Lion-i386 `CGSAddTrackingArea` CoreGraphics protocol audit. No XNU source change, kernel rebuild, or reboot is indicated.
