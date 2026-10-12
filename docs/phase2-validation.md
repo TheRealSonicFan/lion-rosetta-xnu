@@ -1426,3 +1426,10 @@ Runtime therefore advances to one exact user-space ColorProfileClient compatibil
 The rebuilt Snow Leopard ColorProfileClient v2 passthrough control passed, and the Lion syscall-295 probe remains healthy on the accepted kernel. In the single Lion integration, the exact first legacy ColorProfileClient request was converted `0x74d4 -> 0x74d6`; the native server returned `0x753a / 0x28` with result zero and a nonzero client ID; the adapter returned `0x7538 / 0x28` to the PPC client while preserving the reply body. There was no later ColorProfileClient retry.
 
 The first-order failure has therefore moved downstream from client initialization to `CGSColorProfileCreateWithColorProfileID: Cannot resolve color profile id(1)`. The accepted ShowWindow ordering/tracking adapters and exact-six notification broker remain successful, protected hashes are unchanged, and the process still stops before `S01_AFTER_ShowWindow`. Runtime advances to a read-only Snow-PPC/Lion-i386 CoreGraphics audit of `__CGSResolveColorProfile` and its server-side resolve/release family. This evidence still indicates a user-space compatibility boundary; no XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ResolveColorProfile static differential remains user-space
+
+The Snow PPC / Lion i386 CoreGraphics resolver audit passes and isolates another generated-MIG release skew immediately downstream of the accepted ColorProfileClient adapter. Snow `__CGSResolveColorProfile` uses request/reply `0x74d7 / 0x753b`; Lion uses `0x74d9 / 0x753d`. The request bits, one-port-descriptor shape, `0x38 / 0x3c` send/receive sizes, and `0x34 / 0x24` success/error reply geometry remain aligned. The corresponding server-side resolve path still performs the same live-relevant client/task/profile lookup sequence.
+
+Runtime therefore advances only to a behavior-preserving passive live ResolveColorProfile discriminator with the accepted ColorProfileClient adapter unchanged. The new static evidence does not indicate an XNU source change, kernel rebuild, or reboot.
