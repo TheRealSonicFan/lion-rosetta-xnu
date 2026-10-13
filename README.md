@@ -203,3 +203,10 @@ The runtime dual CoreServices integration now passes completely: the translated 
 
 
 The runtime pre-dispatch compatibility discriminator has now moved the active failure above CarbonCore and into the restored Snow Leopard PPC Security session path. With both proven CoreServices adaptations active, `scCreateSystemServiceVersion("LaunchApplicationServices")` succeeds on Lion, but the untouched `SessionGetInfo(callerSecuritySession,...)` call returns status `1` with no session ID or attributes. The exact Snow Leopard control succeeds. The runtime repository is next performing a read-only shipped-binary Security/securityd protocol audit before any session compatibility proof is designed. The syscall-295 probe remains a clean EBADF/no-SIGSYS PASS and no additional XNU change is indicated.
+
+
+## Exact ArtFile crash remains entirely above XNU
+
+The corrected runtime preserved-core decoder now proves the immediate ShowWindow SIGSEGV is a user-space CoreUI resource-contract failure. Snow-PPC CoreUI emits path component `0xb6` while Lion's legacy `ArtFile.bin` defines only `0xa9` / 169 components. The old unchecked lookup crosses `0x60` bytes into Lion's string pool and computes invalid pointer `0x787221c5`, exactly matching the preserved PPC crash argument; the translated load faults at adjacent address `0x787221c4`.
+
+The companion runtime repository is therefore moving to a read-only Snow/Lion component-dictionary audit to identify the semantic meaning of Snow component `0xb6` before any compatibility experiment. No XNU source change, kernel rebuild, or reboot is indicated.
