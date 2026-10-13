@@ -1500,3 +1500,12 @@ The preserved exact-seven ShowWindow crash has been analyzed in postmortem mode 
 The translated Rosetta host instruction faults while loading through the same invalid address. The accepted WindowBackingInfo, ColorProfileClient, ResolveColorProfile, and exact-seven notification paths remain upstream successes; no eighth notification request was observed. RawCamera is absent from the crash stack.
 
 Runtime therefore advances to a read-only Snow/Lion CoreUI/HIToolbox theme-path differential. The boundary remains user-space/framework/Rosetta-side. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## CoreUI crash is a Rosetta cache versus Lion resource contract mismatch
+
+The Snow/Lion CoreUI static differential keeps the boundary above XNU. The Rosetta shared cache and map are byte-for-byte identical on Snow Leopard and Lion, and the preserved Lion crash addresses map exactly to the Snow PPC CoreUI and HIToolbox symbol offsets at fixed image bases. Lion's Rosetta process is therefore executing Snow-era PPC framework code from the unchanged cache while reading Lion-era CoreUI resources from disk.
+
+The on-disk resource generation changed materially between releases: Lion adds `ArtFile200.bin`, changes `ArtFile.bin` and `SArtFile.bin`, and its native CoreUI introduces an `ArtFileInfo*`-aware diagnostic/setup contract absent from Snow PPC CoreUI. Runtime advances to a targeted read-only ArtFile code/resource audit before any compatibility experiment.
+
+No XNU source change, kernel rebuild, or reboot is indicated.
