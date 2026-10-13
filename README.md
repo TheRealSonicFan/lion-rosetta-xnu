@@ -217,3 +217,8 @@ The companion runtime repository is therefore moving to a read-only Snow/Lion co
 The runtime Snow/Lion component dictionary audits now prove that the failing titlebar path uses a Snow-era component-ID namespace that Lion's ArtFile reindexed. All active semantics changed numeric IDs between releases, including `titlebarcontrols a6->99`, `colorsryg 16->17`, `disabled 1f->22`, `regularwin 7a->72`, and `zoom b6->a9`. The earlier exact crash pointer remains explained by the old unchecked Snow lookup crossing Lion's shorter table.
 
 The companion runtime repository is moving to a read-only CoreUI titlebar path-builder/helper differential before any process-local semantic translation is attempted. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Translated titlebar ArtFile keys remain a user-space compatibility boundary
+
+The runtime translated-path feasibility audit now passes on Snow Leopard and Lion. Snow validates the old lookup model with direct hits for the three captured titlebar keys; Lion contains no direct records for those Snow byte keys but does contain one valid direct legacy-ArtFile entry for each semantic-equivalent Lion key. The companion runtime repository is therefore proceeding only to a non-live exact-three-key policy proof with Lion release/resource guards and identity fallback before any CoreUI interposition is designed. No XNU source change, kernel rebuild, or reboot is indicated.
