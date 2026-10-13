@@ -1482,3 +1482,12 @@ The capture-only seventh distributed-notification audit completes with the accep
 The WindowBackingInfo, ColorProfileClient, and ResolveColorProfile adapters remain successful and the prior backing-data shared-memory mapping failure remains absent. The syscall-295 probe still returns EBADF without SIGSYS on the accepted kernel hash.
 
 Runtime therefore advances only to an exact-seven user-space notification-registration experiment. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Exact-seven notification boundary closes; crash remains user-space
+
+The exact-seven distributed-notification registration run accepts the reviewed `com.apple.ColorSync.DisplayProfileNotification` request, finishes `register=7 callback=0 rejects=0 exact=YES` with broker PASS, and observes no eighth request. The accepted WindowBackingInfo, ColorProfileClient, and ResolveColorProfile compatibility paths remain successful and the former backing-data shared-memory mapping failure stays cleared.
+
+`ShowWindow` still terminates before its after-return marker with exit status 139. The first visible diagnostics after the seventh registration are CoreUI `Invalid ArtFile Path!` messages, and the run preserved a crash report plus `/cores/core.89664`.
+
+Runtime therefore advances to a read-only crash/core postmortem. This remains a user-space/Rosetta-framework boundary: no XNU source change, kernel rebuild, or reboot is indicated.
