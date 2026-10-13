@@ -1509,3 +1509,10 @@ The Snow/Lion CoreUI static differential keeps the boundary above XNU. The Roset
 The on-disk resource generation changed materially between releases: Lion adds `ArtFile200.bin`, changes `ArtFile.bin` and `SArtFile.bin`, and its native CoreUI introduces an `ArtFileInfo*`-aware diagnostic/setup contract absent from Snow PPC CoreUI. Runtime advances to a targeted read-only ArtFile code/resource audit before any compatibility experiment.
 
 No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ArtFile discriminator remains entirely above XNU
+
+The targeted Snow/Lion CoreUI ArtFile audit keeps the current boundary in user space. The old Snow-PPC CoreUI diagnostic helper decodes component IDs through global archive tables, while Lion's native CoreUI uses an `ArtFileInfo*`-aware path with separate ArtFile10/ArtFile20 setup and bounds checks. The exact dotted `west...scrollbars` diagnostics are synthesized from component names rather than stored as literal strings in the audited archives.
+
+Runtime therefore advances to a read-only preserved-core decode of the old PPC CoreUI ArtFile globals and the active `CUIElement::Load` path buffer. No new PPC execution is required, and no XNU source change, kernel rebuild, or reboot is indicated.
