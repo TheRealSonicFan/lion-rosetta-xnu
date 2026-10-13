@@ -232,3 +232,8 @@ The runtime exact-three-key policy proof now passes on Snow Leopard and Lion. Sn
 ## Titlebar bsearch integration boundary remains entirely above XNU
 
 The runtime Snow/Lion bsearch-boundary audit now passes. Snow proves the old cached PPC CoreUI calls `LoadFromArtFile` internally and reaches libSystem `bsearch` through one lazy-bound external stub with the expected comparator; Lion proves that the same PPC CoreUI contract is supplied by the identical Rosetta cache while consuming the accepted Lion `ArtFile.bin`. The companion runtime repository has prepared an exact-three-key, process-local `bsearch` compatibility dylib with a mandatory Snow passthrough control before one Lion ShowWindow proof. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Live titlebar translation result still remains above XNU
+
+The runtime exact-three `bsearch` compatibility artifact has now been exercised live. Snow Leopard passed the passthrough control; Lion again passed syscall 295 and the exact-seven notification gate, and all three proven titlebar keys translated with zero guard rejects. ShowWindow nevertheless terminated with exit 139 after CoreUI emitted a different residual invalid-path trio (`a60113167a000000`, `a60116567a000000`, `a601167ab6000000`). The next gate is review of the newly named user-space crash report, crash plist, and core before any translation-policy expansion. This does not indicate an XNU source change, kernel rebuild, or reboot.
