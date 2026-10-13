@@ -1491,3 +1491,12 @@ The exact-seven distributed-notification registration run accepts the reviewed `
 `ShowWindow` still terminates before its after-return marker with exit status 139. The first visible diagnostics after the seventh registration are CoreUI `Invalid ArtFile Path!` messages, and the run preserved a crash report plus `/cores/core.89664`.
 
 Runtime therefore advances to a read-only crash/core postmortem. This remains a user-space/Rosetta-framework boundary: no XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Exact-seven crash localizes above XNU in CoreUI
+
+The preserved exact-seven ShowWindow crash has been analyzed in postmortem mode without another PPC execution. The failure is `EXC_BAD_ACCESS (SIGSEGV)` at `0x787221c4`, and the PPC stack localizes it to libc formatting called by CoreUI's `ShowArtFilePathToStdErr`, reached through `CUIElement::LoadFromArtFile`, the CoreUI renderer, and HIToolbox titlebar-button drawing.
+
+The translated Rosetta host instruction faults while loading through the same invalid address. The accepted WindowBackingInfo, ColorProfileClient, ResolveColorProfile, and exact-seven notification paths remain upstream successes; no eighth notification request was observed. RawCamera is absent from the crash stack.
+
+Runtime therefore advances to a read-only Snow/Lion CoreUI/HIToolbox theme-path differential. The boundary remains user-space/framework/Rosetta-side. No XNU source change, kernel rebuild, or reboot is indicated.
