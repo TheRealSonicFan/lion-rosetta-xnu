@@ -210,3 +210,10 @@ The runtime pre-dispatch compatibility discriminator has now moved the active fa
 The corrected runtime preserved-core decoder now proves the immediate ShowWindow SIGSEGV is a user-space CoreUI resource-contract failure. Snow-PPC CoreUI emits path component `0xb6` while Lion's legacy `ArtFile.bin` defines only `0xa9` / 169 components. The old unchecked lookup crosses `0x60` bytes into Lion's string pool and computes invalid pointer `0x787221c5`, exactly matching the preserved PPC crash argument; the translated load faults at adjacent address `0x787221c4`.
 
 The companion runtime repository is therefore moving to a read-only Snow/Lion component-dictionary audit to identify the semantic meaning of Snow component `0xb6` before any compatibility experiment. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## ArtFile component namespace shift remains entirely above XNU
+
+The runtime Snow/Lion component dictionary audits now prove that the failing titlebar path uses a Snow-era component-ID namespace that Lion's ArtFile reindexed. All active semantics changed numeric IDs between releases, including `titlebarcontrols a6->99`, `colorsryg 16->17`, `disabled 1f->22`, `regularwin 7a->72`, and `zoom b6->a9`. The earlier exact crash pointer remains explained by the old unchecked Snow lookup crossing Lion's shorter table.
+
+The companion runtime repository is moving to a read-only CoreUI titlebar path-builder/helper differential before any process-local semantic translation is attempted. No XNU source change, kernel rebuild, or reboot is indicated.
