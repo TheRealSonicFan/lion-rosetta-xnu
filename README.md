@@ -222,3 +222,8 @@ The companion runtime repository is moving to a read-only CoreUI titlebar path-b
 ## Translated titlebar ArtFile keys remain a user-space compatibility boundary
 
 The runtime translated-path feasibility audit now passes on Snow Leopard and Lion. Snow validates the old lookup model with direct hits for the three captured titlebar keys; Lion contains no direct records for those Snow byte keys but does contain one valid direct legacy-ArtFile entry for each semantic-equivalent Lion key. The companion runtime repository is therefore proceeding only to a non-live exact-three-key policy proof with Lion release/resource guards and identity fallback before any CoreUI interposition is designed. No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Exact titlebar translation policy remains entirely above XNU
+
+The runtime exact-three-key policy proof now passes on Snow Leopard and Lion. Snow keeps the Lion-only guard disabled and preserves all local ArtFile lookups; Lion enables the accepted 10.7.5/11G63 resource guard, maps only the three proven Snow titlebar keys to valid Lion entries, passes 6,120 single-byte near-miss identity cases, changes zero local ArtFile records, and is idempotent. The companion runtime repository is proceeding to a read-only integration-boundary audit to determine whether the old PPC CoreUI ArtFile lookup can be intercepted narrowly at its external libSystem `bsearch` call before any live compatibility artifact is built. No XNU source change, kernel rebuild, or reboot is indicated.
