@@ -1473,3 +1473,12 @@ The accepted syscall-295 preflight remains unchanged: the expected kernel image 
 The next boundary is later and wholly user-space: distributed-notification request index 7, bits `0x1111`, message ID 4, message size 356, payload 322, rejected by the exact-six broker with status 25 / unknown name. Runtime advances to a capture/decode-only seventh-request schema audit with the same rejection preserved.
 
 No XNU source change, kernel rebuild, or reboot is indicated.
+
+
+## Seventh notification schema is a user-space registration boundary
+
+The capture-only seventh distributed-notification audit completes with the accepted kernel and ShowWindow compatibility stack unchanged. The seventh legacy request is an ordinary `register` dictionary for `com.apple.ColorSync.DisplayProfileNotification`, `kCFNotificationAnyObject`, legacy behavior 4, counter 1, a positive per-run entry, and the established session. The audit deliberately preserves the broker's status-25 rejection while capturing the exact binary plist.
+
+The WindowBackingInfo, ColorProfileClient, and ResolveColorProfile adapters remain successful and the prior backing-data shared-memory mapping failure remains absent. The syscall-295 probe still returns EBADF without SIGSYS on the accepted kernel hash.
+
+Runtime therefore advances only to an exact-seven user-space notification-registration experiment. No XNU source change, kernel rebuild, or reboot is indicated.
