@@ -1553,3 +1553,9 @@ The runtime payload-fingerprint audit now shows that three of Snow's five exact 
 
 Runtime advances only to a Lion static provenance audit across SArtFile, ArtFile10, and ArtFile20 for those five hashes. This remains a CoreUI resource/indexing boundary; no XNU source change, kernel rebuild, or reboot is indicated.
 
+## Frame-ID relocation remains above XNU
+
+The Lion CoreUI provenance audit now closes the exact-byte search across SArtFile, ArtFile10, and ArtFile20. Only three Snow frame payloads survive byte-for-byte in Lion, all under relocated SArtFile IDs; the two remaining Snow payloads have no exact raw-byte match in the audited Lion archives. Historical pinned renderer disassembly also shows the active Snow ID order maps exactly to native Lion's `0x4e75..0x4e79` set under a `-0x18` relocation.
+
+Runtime advances only to a static frame-ID relocation/slot audit that reproduces the renderer-role mapping and inspects both Lion record slots. This remains a CoreUI resource/renderer boundary; no XNU source change, rebuild, or reboot is indicated.
+
