@@ -1535,3 +1535,9 @@ The runtime SArtFile frame-record audit now proves that the remaining non-button
 
 Runtime advances only to a guarded user-space trace that correlates exact frame IDs with the raw and ImageIO selection paths. No new syscall, VM, or kernel evidence appears, so no XNU source change, kernel rebuild, or reboot is indicated.
 
+## Corrected SArtFile audit remains above XNU
+
+The completed runtime live trace did not reveal a kernel boundary. Instead it corrected two user-space diagnostics: Snow-PPC `CUISharedArtReader::Setup()` proves the SArtFile offset table begins at mapped-base `+0x08`, superseding the v1 static analyzer's `0x04` base, and the final ImageIO call site cannot recover the legacy image ID from saved `r30` because `CreateImage(long,float)` has already reused that register.
+
+Both Snow and Lion compatibility runners passed; Lion's live raw calls were `0x4e8e -> 256x256` and `0x4e8d -> 2x62`, with non-NULL results. Runtime now returns to a corrected static SArtFile v2 audit and re-summarization of preserved logs. No XNU source change, rebuild, or reboot is indicated.
+
