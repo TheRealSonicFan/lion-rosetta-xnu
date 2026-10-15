@@ -1541,3 +1541,9 @@ The completed runtime live trace did not reveal a kernel boundary. Instead it co
 
 Both Snow and Lion compatibility runners passed; Lion's live raw calls were `0x4e8e -> 256x256` and `0x4e8d -> 2x62`, with non-NULL results. Runtime now returns to a corrected static SArtFile v2 audit and re-summarization of preserved logs. No XNU source change, rebuild, or reboot is indicated.
 
+## Live-active SArtFile payload provenance remains above XNU
+
+The corrected v2 SArtFile reports and corrected Lion live summary close the shared-art branch-selection question entirely in user space. Snow's five live-active frame IDs are type-2/count-1 raw 11x11 records. Lion's exact raw subset is `0x4e8e -> 256x256` and `0x4e8d -> 2x62`; the remaining active IDs `0x4e90`, `0x4e8f`, and `0x4e91` are type-3/count-3 and account exactly for the three non-NULL ImageIO calls.
+
+Runtime now advances to a static provider-payload fingerprint audit to determine whether those five Snow 11x11 payloads survive elsewhere in Lion's SArtFile. No XNU source change, rebuild, or reboot is indicated.
+
