@@ -1601,3 +1601,9 @@ The corrected Snow v2 titlebar-input control passes with public `FindWindow=inDr
 
 Runtime now advances to a read-only Snow-PPC/Lion-i386 CoreGraphics generated-MIG protocol audit for that exact event-retrieval helper. No event-ID translation or request-layout adaptation is authorized until the native Lion client contract is established. This remains a user-space CoreGraphics/WindowServer compatibility boundary; no XNU source change, kernel rebuild, or reboot is indicated.
 
+
+## CGS next-event v1 wire-layout differential remains above XNU
+
+The completed runtime v1 static reports keep this boundary in user space. Snow PPC and Lion i386 use the same `CGSGetNextEventRecord` request/reply IDs `0x7292/0x72f6` and request bits `0x1513`, but their native generated-MIG geometry differs: Snow sends `0x18` and receives up to `0x4030`; Lion sends `0x24` and receives up to `0x0c30`. An ID-only rewrite is therefore ruled out, while the exact meaning of Lion's additional 12 request bytes and its reply-validation path remains to be resolved.
+
+Runtime advances only to analyzer v2 of the same read-only Snow-PPC/Lion-i386 CoreGraphics audit. V2 resolves `_snarfEvents` to the exact generated-MIG transport symbol and emits its complete request/reply contract before any live compatibility adapter is considered. No XNU source change, kernel rebuild, reboot, or new kernel experiment is indicated.
