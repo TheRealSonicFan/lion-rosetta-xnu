@@ -1516,3 +1516,9 @@ No XNU source change, kernel rebuild, or reboot is indicated.
 The targeted Snow/Lion CoreUI ArtFile audit keeps the current boundary in user space. The old Snow-PPC CoreUI diagnostic helper decodes component IDs through global archive tables, while Lion's native CoreUI uses an `ArtFileInfo*`-aware path with separate ArtFile10/ArtFile20 setup and bounds checks. The exact dotted `west...scrollbars` diagnostics are synthesized from component names rather than stored as literal strings in the audited archives.
 
 Runtime therefore advances to a read-only preserved-core decode of the old PPC CoreUI ArtFile globals and the active `CUIElement::Load` path buffer. No new PPC execution is required, and no XNU source change, kernel rebuild, or reboot is indicated.
+
+## CoreUI shared-art source remains above XNU
+
+The runtime caller-resolution audit now resolves the first divergent non-button CoreUI constructor site `0x0002ad34` to Snow-PPC `CUISharedArtReader::CreateImageFromBytes(long,long)`. That routine obtains its input through `CUISharedArtReader::GetImageHeader(long)` and decodes byte-swapped serialized width, height, provider-length, and provider-data-offset fields before invoking `CGImageCreate`. The observed Snow five-by-11x11 stream versus Lion's 256x256 and 2x62 stream is therefore a user-space CoreUI shared-art source/header divergence, while image construction remains non-NULL.
+
+Runtime advances to a static shared-art source audit that resolves the unique reader caller, `GetImageHeader` implementation, and release-local CoreUI resource identities. No additional syscall/VM evidence, XNU source change, kernel rebuild, or reboot is indicated.
