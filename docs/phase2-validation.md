@@ -1547,3 +1547,9 @@ The corrected v2 SArtFile reports and corrected Lion live summary close the shar
 
 Runtime now advances to a static provider-payload fingerprint audit to determine whether those five Snow 11x11 payloads survive elsewhere in Lion's SArtFile. No XNU source change, rebuild, or reboot is indicated.
 
+## Legacy frame-payload provenance remains above XNU
+
+The runtime payload-fingerprint audit now shows that three of Snow's five exact 484-byte frame payloads survive byte-for-byte in Lion SArtFile under different IDs: `0x4e8d -> 0x4e75`, `0x4e8e -> 0x4e76`, and `0x4e90 -> 0x4e78`. Snow `0x4e8f` and `0x4e91` have no exact match among Lion's 11x11/484-byte SArtFile candidates.
+
+Runtime advances only to a Lion static provenance audit across SArtFile, ArtFile10, and ArtFile20 for those five hashes. This remains a CoreUI resource/indexing boundary; no XNU source change, kernel rebuild, or reboot is indicated.
+
