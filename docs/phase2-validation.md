@@ -1559,3 +1559,9 @@ The Lion CoreUI provenance audit now closes the exact-byte search across SArtFil
 
 Runtime advances only to a static frame-ID relocation/slot audit that reproduces the renderer-role mapping and inspects both Lion record slots. This remains a CoreUI resource/renderer boundary; no XNU source change, rebuild, or reboot is indicated.
 
+## Slot-0 compatibility boundary remains above XNU
+
+The runtime frame-ID relocation audit now passes on both Snow and Lion. The active legacy range maps exactly to Lion's relocated shared-art IDs, and all five Lion records preserve 11x11 slot 0 while adding 22x22 slot 1. The remaining problem is therefore how the Snow-PPC CoreUI reader selects a representation from Lion's type-1/count-2 records, not a kernel or VM boundary.
+
+Runtime advances only to a static audit of the exact Snow-PPC shared-art call path to identify the narrowest user-space compatibility boundary. No XNU source change, kernel rebuild, or reboot is indicated.
+
