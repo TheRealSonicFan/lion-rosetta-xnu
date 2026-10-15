@@ -1583,3 +1583,9 @@ The first guarded exact-five CoreUI slot-0 integration produced a partial visual
 
 Runtime now returns to a Lion-only static pixel-format audit of the five mapped SArtFile slot-0 payloads before any adapter or notification-policy revision. Titlebar dragging remains a separate interaction defect. No XNU source change, kernel rebuild, or reboot is indicated.
 
+## Exact-two corner-format compatibility remains above XNU
+
+The Lion mapped slot-0 pixel-format audit passes and resolves the remaining visual corner defect to two user-space CoreUI image-construction contracts. The three byte-identical Snow anchors stay on their healthy `bitmapInfo=0x2` path; only the mapped legacy `0x4e8f` and `0x4e91` corner payloads have a decisive byte-3 alpha layout and therefore advance to one guarded `0x2002` replacement test.
+
+Runtime current main now provides a v2 exact-two slot-0 format adapter and dedicated summarizer. The exact-five resource mapping, exact-six traffic-light rule, notification broker, CGS compatibility, hit semantics, and kernel are unchanged. No XNU source change, rebuild, or reboot is indicated.
+
