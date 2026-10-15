@@ -1589,3 +1589,9 @@ The Lion mapped slot-0 pixel-format audit passes and resolves the remaining visu
 
 Runtime current main now provides a v2 exact-two slot-0 format adapter and dedicated summarizer. The exact-five resource mapping, exact-six traffic-light rule, notification broker, CGS compatibility, hit semantics, and kernel are unchanged. No XNU source change, rebuild, or reboot is indicated.
 
+## Titlebar drag-routing boundary remains above XNU
+
+The exact-two CoreUI slot-0 format correction now closes the Lion window-frame rendering defect entirely in user space: the titlebar background and both top corners are restored, all five shared-art replacements succeed, and the existing exact-six traffic-light rule remains intact. The generic runner's nonzero exit remains the previously isolated missing-ColorSync notification sequence, not a rendering failure.
+
+The only remaining titlebar defect is interaction: the fully rendered titlebar is still not draggable. Runtime therefore returns to a Snow-PPC HIToolbox static call-graph audit of hit classification and drag tracking before any live interaction trace. No XNU source change, kernel rebuild, or reboot is indicated.
+
