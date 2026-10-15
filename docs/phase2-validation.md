@@ -1591,7 +1591,7 @@ Runtime current main now provides a v2 exact-two slot-0 format adapter and dedic
 
 ## Titlebar drag-routing boundary remains above XNU
 
-The exact-two CoreUI slot-0 format correction now closes the Lion window-frame rendering defect entirely in user space: the titlebar background and both top corners are restored, all five shared-art replacements succeed, and the existing exact-six traffic-light rule remains intact. The generic runner's nonzero exit remains the previously isolated missing-ColorSync notification sequence, not a rendering failure.
+The exact-two CoreUI slot-0 format correction closes the Lion window-frame rendering defect entirely in user space. The subsequent exact Snow-PPC HIToolbox drag-routing audit also passes and resolves a direct user-space path: `HIWindowFrameView::TrackSelf -> DragWindow -> TDragTracker -> TWindowTracker::TrackWindow`, while the previously audited hit-mask/classic-part mapping remains unchanged.
 
-The only remaining titlebar defect is interaction: the fully rendered titlebar is still not draggable. Runtime therefore returns to a Snow-PPC HIToolbox static call-graph audit of hit classification and drag tracking before any live interaction trace. No XNU source change, kernel rebuild, or reboot is indicated.
+Runtime now advances only to a passive Snow/Lion `DragWindow` reachability and window-movement trace. That experiment will distinguish an upstream event/frame-view dispatch failure from a failure inside user-space drag tracking. No XNU source change, kernel rebuild, or reboot is indicated; hit-part translation and new CGS policy remain unauthorized.
 
