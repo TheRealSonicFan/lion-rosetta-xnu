@@ -1591,7 +1591,7 @@ Runtime current main now provides a v2 exact-two slot-0 format adapter and dedic
 
 ## Titlebar drag-routing boundary remains above XNU
 
-The exact-two CoreUI slot-0 format correction closes the Lion window-frame rendering defect entirely in user space. The subsequent exact Snow-PPC HIToolbox drag-routing audit also passes and resolves a direct user-space path: `HIWindowFrameView::TrackSelf -> DragWindow -> TDragTracker -> TWindowTracker::TrackWindow`, while the previously audited hit-mask/classic-part mapping remains unchanged.
+The exact-two CoreUI slot-0 format correction closes the Lion frame-rendering defect, and the exact Snow-PPC HIToolbox static audit still resolves `HIWindowFrameView::TrackSelf -> DragWindow -> TDragTracker -> TWindowTracker::TrackWindow`. The first live `DragWindow`/`FindWindow` dyld-interpose attempt is discarded as a diagnostic-design failure: those calls are direct same-image HIToolbox branches and therefore bypass dyld interposition.
 
-Runtime now advances only to a passive Snow/Lion `DragWindow` reachability and window-movement trace. That experiment will distinguish an upstream event/frame-view dispatch failure from a failure inside user-space drag tracking. No XNU source change, kernel rebuild, or reboot is indicated; hit-part translation and new CGS policy remain unauthorized.
+Runtime now uses a v2 public Carbon Event Manager dispatcher monitor with observation-only `FindWindow` classification and a longer diagnostic quit timer to re-establish the Snow positive drag control before any Lion comparison. This remains entirely user-space evidence gathering. No XNU source change, kernel rebuild, reboot, hit-part translation, or new CGS policy is indicated.
 
