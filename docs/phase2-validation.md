@@ -1577,3 +1577,9 @@ The Snow/Lion external-boundary live summaries now both pass. Lion recovers the 
 
 Runtime now advances to one guarded Snow-passthrough/Lion visual integration of that exact-five slot-0 adapter. This remains a user-space CoreUI resource-construction boundary; no XNU source change, kernel rebuild, or reboot is indicated.
 
+## Mapped slot-0 pixel-format boundary remains above XNU
+
+The first guarded exact-five CoreUI slot-0 integration produced a partial visual repair entirely in user space: all five replacements succeeded and the Lion titlebar background became opaque/restored, while the top corners remain missing. The runner failure is isolated to the existing exact-21 distributed-notification oracle: one previously accepted ColorSync registration disappears and the remaining accepted tail shifts by one position.
+
+Runtime now returns to a Lion-only static pixel-format audit of the five mapped SArtFile slot-0 payloads before any adapter or notification-policy revision. Titlebar dragging remains a separate interaction defect. No XNU source change, kernel rebuild, or reboot is indicated.
+
