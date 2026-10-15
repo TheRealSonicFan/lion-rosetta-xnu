@@ -1571,3 +1571,9 @@ The Snow-PPC slot-0 compatibility-boundary audit passes and narrows the remainin
 
 Runtime now advances to a passive Snow/Lion external-boundary trace to prove exact ImageIO IDs and source-pointer correlation before any exact-five image adapter is implemented. This remains entirely above the kernel; no XNU source change, rebuild, or reboot is indicated.
 
+## Shared-art slot-0 compatibility remains above XNU
+
+The Snow/Lion external-boundary live summaries now both pass. Lion recovers the exact two raw frame targets plus ImageIO IDs `0x4e90`, `0x4e8f`, and `0x4e91`, and each ImageIO source pointer correlates one-to-one with final non-NULL image creation. The remaining fix can therefore stay entirely at public CoreGraphics/ImageIO boundaries and use existing Lion SArtFile slot-0 bytes.
+
+Runtime now advances to one guarded Snow-passthrough/Lion visual integration of that exact-five slot-0 adapter. This remains a user-space CoreUI resource-construction boundary; no XNU source change, kernel rebuild, or reboot is indicated.
+
