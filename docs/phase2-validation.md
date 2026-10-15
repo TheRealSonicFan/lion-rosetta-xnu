@@ -1595,3 +1595,9 @@ The exact-two CoreUI slot-0 format correction closes the Lion frame-rendering de
 
 Runtime now uses a v2 public Carbon Event Manager dispatcher monitor with observation-only `FindWindow` classification and a longer diagnostic quit timer to re-establish the Snow positive drag control before any Lion comparison. This remains entirely user-space evidence gathering. No XNU source change, kernel rebuild, reboot, hit-part translation, or new CGS policy is indicated.
 
+## CGS event-retrieval boundary remains above XNU
+
+The corrected Snow v2 titlebar-input control passes with public `FindWindow=inDrag (4)` and observed window movement. The corresponding Lion run fails before Carbon event dispatch: Snow PPC CoreGraphics sends legacy `CGSGetNextEventRecord` request/reply `0x7292/0x72f6`, but Lion returns a simple type-check error and CoreGraphics logs `MIG: server type check failure: CGSGetNextEventRecord (Inline)`. The dispatcher monitor therefore sees no mouse event and the window does not move.
+
+Runtime now advances to a read-only Snow-PPC/Lion-i386 CoreGraphics generated-MIG protocol audit for that exact event-retrieval helper. No event-ID translation or request-layout adaptation is authorized until the native Lion client contract is established. This remains a user-space CoreGraphics/WindowServer compatibility boundary; no XNU source change, kernel rebuild, or reboot is indicated.
+
