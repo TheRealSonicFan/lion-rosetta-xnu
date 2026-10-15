@@ -1565,3 +1565,9 @@ The runtime frame-ID relocation audit now passes on both Snow and Lion. The acti
 
 Runtime advances only to a static audit of the exact Snow-PPC shared-art call path to identify the narrowest user-space compatibility boundary. No XNU source change, kernel rebuild, or reboot is indicated.
 
+## Shared-art external-boundary correlation remains above XNU
+
+The Snow-PPC slot-0 compatibility-boundary audit passes and narrows the remaining window-frame problem to public CoreGraphics/ImageIO construction boundaries. The private shared-art selector is a direct internal CoreUI branch, while `CreateImageSource(long)` preserves the original legacy image ID in its saved incoming `r30` slot through `CGDataProviderCreateWithData` and `CGImageSourceCreateWithDataProvider`.
+
+Runtime now advances to a passive Snow/Lion external-boundary trace to prove exact ImageIO IDs and source-pointer correlation before any exact-five image adapter is implemented. This remains entirely above the kernel; no XNU source change, rebuild, or reboot is indicated.
+
