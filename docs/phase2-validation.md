@@ -1607,3 +1607,19 @@ Runtime now advances to a read-only Snow-PPC/Lion-i386 CoreGraphics generated-MI
 The completed runtime v1 static reports keep this boundary in user space. Snow PPC and Lion i386 use the same `CGSGetNextEventRecord` request/reply IDs `0x7292/0x72f6` and request bits `0x1513`, but their native generated-MIG geometry differs: Snow sends `0x18` and receives up to `0x4030`; Lion sends `0x24` and receives up to `0x0c30`. An ID-only rewrite is therefore ruled out, while the exact meaning of Lion's additional 12 request bytes and its reply-validation path remains to be resolved.
 
 Runtime advances only to analyzer v2 of the same read-only Snow-PPC/Lion-i386 CoreGraphics audit. V2 resolves `_snarfEvents` to the exact generated-MIG transport symbol and emits its complete request/reply contract before any live compatibility adapter is considered. No XNU source change, kernel rebuild, reboot, or new kernel experiment is indicated.
+
+## CGS next-event ID collision remains above XNU
+
+The runtime v2 reports correct the earlier v1 interpretation. Both release-local
+`_snarfEvents` functions call `__CGSGetPortStreamInline`; the actual Snow
+helper uses request/reply `0x7292/0x72f6`, while Lion's same helper uses
+`0x7295/0x72f9`. Both retain bits `0x1513`, send size `0x18`, receive
+capacity `0x4030`, and equivalent stream-reply validation. Lion has reused
+Snow's old IDs for `__CGSGetDisplayPalette`, whose incompatible
+`0x24/0x0c30` geometry explains the live -304 type-check failure.
+
+Runtime therefore advances to one exact user-space request/reply ID adaptation
+(`0x7292->0x7295`, `0x72f9->0x72f6`) with the existing public dispatcher
+monitor retained as the causal gate. Event bytes, NDR, Mach ports, sizes,
+part-code semantics, and all kernel state remain unchanged. No XNU source
+change, kernel rebuild, reboot, or new kernel experiment is indicated.
