@@ -1528,3 +1528,10 @@ Runtime advances to a static shared-art source audit that resolves the unique re
 The runtime shared-art source audit now resolves the divergent non-button image path to Snow-PPC `CUISharedArtReader::CreateImage(float)` / `GetImageHeader(long)`. The legacy reader subtracts `0x4e20` from each shared image ID and follows a release-local offset table; the seven frame-image IDs therefore target SArtFile indices 105, 106, and 109-113. Snow and Lion both expose version-2 `SArtFile.bin` resources but with different entry counts, sizes, and hashes.
 
 Runtime advances only to a read-only static decode of those exact SArtFile records. No additional syscall, VM, or kernel evidence appears, so no XNU source change, kernel rebuild, or reboot is indicated.
+
+## Shared-art selection trace remains above XNU
+
+The runtime SArtFile frame-record audit now proves that the remaining non-button frame-image divergence is explained by release-local CoreUI resource metadata: Snow's exact-seven frame records are all type 2 / count 1, while Lion changes the corresponding records' type/count and geometry; Lion `0x4e8f` slot 1 is exactly the previously observed 256x256 raw image and `0x4e8e` / `0x4e8d` are the 2x62 candidates.
+
+Runtime advances only to a guarded user-space trace that correlates exact frame IDs with the raw and ImageIO selection paths. No new syscall, VM, or kernel evidence appears, so no XNU source change, kernel rebuild, or reboot is indicated.
+
