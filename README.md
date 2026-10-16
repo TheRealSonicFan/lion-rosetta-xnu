@@ -2,6 +2,16 @@
 
 Experimental tooling to restore Rosetta 1's PowerPC-on-Intel execution path on Mac OS X 10.7 Lion.
 
+## Legacy-target transfer and provenance policy
+
+Snow Leopard 10.6.8 and Lion 10.7.5 are treated as offline legacy execution
+targets. Do not require Git network operations or Git blob/hash-object checks on
+either machine. Obtain and verify current repository content on a modern
+TLS-capable staging system, transfer the verified tree or archive, and use
+SHA-256 checks on the legacy target for transferred files and generated
+artifacts. Historical instructions that say to pull or verify a Git blob on a
+legacy target should be interpreted as staging-system verification instead.
+
 ## Current status
 
 The project has confirmed four kernel-side compatibility requirements:
