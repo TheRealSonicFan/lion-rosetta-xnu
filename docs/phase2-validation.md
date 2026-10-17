@@ -1623,3 +1623,10 @@ Runtime therefore advances to one exact user-space request/reply ID adaptation
 monitor retained as the causal gate. Event bytes, NDR, Mach ports, sizes,
 part-code semantics, and all kernel state remain unchanged. No XNU source
 change, kernel rebuild, reboot, or new kernel experiment is indicated.
+
+
+## Event-unflip dladdr route remains above XNU
+
+The runtime event-unflip investigation has now closed three additional user-space gates without exposing a kernel requirement. The Snow-PPC CoreGraphics zero-cache path is reducible to one `_CGSGetDisplayBounds` callsite; the selected existing `_dladdr` PIC symbol stub is reachable with candidate PPC branch word `0x48524d51`; and both Snow Leopard and Lion translated PPC have proved that only the process-local loaded callsite page can be made writable, the candidate word can be read back, and original word `0x4bff702d` plus the original `r--` protection can be restored before execution.
+
+Runtime now advances to a proof-only `dladdr` interposition/binding and exact-return-address guard preflight with the callsite left untouched. No functional display-source scan, patched-route execution, XNU source change, kernel rebuild, reboot, or new kernel experiment is indicated by the reversible-write result.
