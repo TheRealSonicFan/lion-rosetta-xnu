@@ -1630,3 +1630,10 @@ change, kernel rebuild, reboot, or new kernel experiment is indicated.
 The runtime event-unflip investigation has now closed three additional user-space gates without exposing a kernel requirement. The Snow-PPC CoreGraphics zero-cache path is reducible to one `_CGSGetDisplayBounds` callsite; the selected existing `_dladdr` PIC symbol stub is reachable with candidate PPC branch word `0x48524d51`; and both Snow Leopard and Lion translated PPC have proved that only the process-local loaded callsite page can be made writable, the candidate word can be read back, and original word `0x4bff702d` plus the original `r--` protection can be restored before execution.
 
 Runtime now advances to a proof-only `dladdr` interposition/binding and exact-return-address guard preflight with the callsite left untouched. No functional display-source scan, patched-route execution, XNU source change, kernel rebuild, reboot, or new kernel experiment is indicated by the reversible-write result.
+
+
+## Event-unflip dladdr binding/guard still remains above XNU
+
+The runtime event-unflip route has now also passed its proof-only `dladdr` binding/guard gate on both Snow Leopard PPC and Lion translated PPC. The selected CoreGraphics `_dladdr` stub reaches the interposer, ordinary `dladdr` calls preserve their result and `Dl_info` through the saved original replacee, the dynamically resolved event-unflip return-address guard accepts only the exact audited address while rejecting adjacent addresses, the target wrapper remains unexecuted, and protected hashes remain unchanged.
+
+Runtime therefore advances to one fail-closed user-space route-execution preflight: temporarily install the already-proven callsite branch, synchronize instruction/data caches, restore the original page protection before executing one synthetic event-unflip call, require exactly one guarded fail-closed target hit, and restore the original call word and protection afterward. No functional display-source helper, original GUI run, XNU source change, kernel rebuild, reboot, or new kernel experiment is indicated by the binding/guard result.
